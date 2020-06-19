@@ -158,10 +158,10 @@ gitrootmakeinstall() { \
 
 installdotfiles() { \
     dialog --infobox "Installing my dotfiles..." 4 60
-    userhome=/home/$user
+    userhome=/home/$name
     cd "$userhome"
-    sudo -u "$name" git clone --bare "$dotfilesrepo" "$userhome"/.dotfiles
-    sudo -u "$name" git --git-dir="$userhome"/.dotfiles/ --work-tree="$userhome" checkout
+    sudo -u "$name" git clone --bare "$dotfilesrepo" .dotfiles
+    sudo -u "$name" git --git-dir="$userhome"/.dotfiles/ --work-tree="$userhome" checkout -f
     sudo -u "$name" git --git-dir="$username"/.dotfiles/ --work-tree="$userhome" config --local status.showUntrackedFiles no
     if [ "$?" = "1" ]; then
         dialog --msgbox "Installation of dotfiles failed! Check for preexisting files!" 5 80
@@ -274,6 +274,8 @@ installyay
 
 install
 
+installdotfiles
+
 setshell "/usr/bin/dash"
 
 setinteractiveshell "/usr/bin/zsh"
@@ -281,8 +283,6 @@ setinteractiveshell "/usr/bin/zsh"
 gitrootmakeinstall "https://github.com/thehnm/dwm" "$userdatadir" "dwm"
 
 gitrootmakeinstall "https://github.com/thehnm/st" "$userdatadir" "st"
-
-installdotfiles
 
 sudo -u "$name" curl -sfL git.io/antibody | sh -s - -b /home/"$name"/.local/bin/
 
