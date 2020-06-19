@@ -158,9 +158,11 @@ gitrootmakeinstall() { \
 
 installdotfiles() { \
     dialog --infobox "Installing my dotfiles..." 4 60
-    sudo -u "$name" git clone --bare "$dotfilesrepo" "$HOME"/.dotfiles
-    sudo -u "$name" git --git-dir=$HOME/.dotfiles/ --work-tree=$HOME checkout
-    sudo -u "$name" git --git-dir=$HOME/.dotfiles/ --work-tree=$HOME config --local status.showUntrackedFiles no
+    userhome=/home/$user
+    cd "$userhome"
+    sudo -u "$name" git clone --bare "$dotfilesrepo" "$userhome"/.dotfiles
+    sudo -u "$name" git --git-dir="$userhome"/.dotfiles/ --work-tree="$userhome" checkout
+    sudo -u "$name" git --git-dir="$username"/.dotfiles/ --work-tree="$userhome" config --local status.showUntrackedFiles no
     if [ "$?" = "1" ]; then
         dialog --msgbox "Installation of dotfiles failed! Check for preexisting files!" 5 80
     fi
