@@ -123,6 +123,7 @@ install() {
     singleinstall "xorg-server"
     singleinstall "xorg-xinit"
     singleinstall "xorg-xsetroot"
+    singleinstall "git"
 
     install_dwm_pkgs
     [ "$laptop" = 1 ] && setup_libinput
@@ -157,7 +158,7 @@ gitrootmakeinstall() { \
 
 installdotfiles() { \
     dialog --infobox "Installing my dotfiles..." 4 60
-    sudo -u "$name" git clone --bare "$dotfilesrepo" $HOME/.dotfiles &> /dev/null
+    sudo -u "$name" git clone --bare "$dotfilesrepo" "$HOME"/.dotfiles
     sudo -u "$name" git --git-dir=$HOME/.dotfiles/ --work-tree=$HOME checkout
     sudo -u "$name" git --git-dir=$HOME/.dotfiles/ --work-tree=$HOME config --local status.showUntrackedFiles no
     if [ "$?" = "1" ]; then
