@@ -141,7 +141,7 @@ install() {
 
 putgitrepo() { \
     # Downlods a gitrepo $1 and places the files in $2 only overwriting conflicts
-    dialog --infobox "Downloading and installing config files..." 4 60
+    dialog --infobox "Downloading $1..." 4 60
     dir=$(mktemp -d)
     chown -R "$name":wheel "$dir"
     sudo -u "$name" git clone "$1" "$dir"/"$3" &>/dev/null &&
