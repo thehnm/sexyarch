@@ -31,10 +31,9 @@
 ,scrot
 ,nextcloud-client
 ,seahorse
-,adobe-source-han-sans-jp-fonts
-,adobe-source-han-sans-kr-fonts
 ,otf-fira-mono
 ,ttf-linux-libertine
+,noto-fonts-cjk
 ,biber
 ,light
 ,mpd
@@ -47,3 +46,4 @@
 ,xdg-user-dirs
 A,betterlockscreen
 A,brave-bin
+A,libxft-bgra
