@@ -4,8 +4,6 @@
 ,dmenu
 ,networkmanager
 ,nm-connection-editor
-,lightdm
-,lightdm-gtk-greeter
 ,dunst
 ,gnome-keyring
 ,libsecret
