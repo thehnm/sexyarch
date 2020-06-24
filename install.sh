@@ -294,8 +294,4 @@ newperms "%wheel ALL=(ALL) ALL\\n%wheel ALL=(ALL) NOPASSWD: /usr/bin/shutdown,/u
 
 miscellaneous
 
-configurelightdm
-
-adddwmsession
-
 finish && clear
