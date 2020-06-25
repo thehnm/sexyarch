@@ -1,7 +1,6 @@
 ,neovim
 ,python-neovim
 ,dash
-,dmenu
 ,networkmanager
 ,nm-connection-editor
 ,dunst

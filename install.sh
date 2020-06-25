@@ -281,8 +281,8 @@ setshell "/usr/bin/dash"
 setinteractiveshell "/usr/bin/zsh"
 
 gitrootmakeinstall "https://github.com/thehnm/dwm" "$userdatadir" "dwm"
-
 gitrootmakeinstall "https://github.com/thehnm/st" "$userdatadir" "st"
+gitrootmakeinstall "https://github.com/thehnm/dmenu" "$userdatadir" "dmenu"
 
 sudo -u "$name" curl -sfL git.io/antibody | sh -s - -b /home/"$name"/.local/bin/
 
