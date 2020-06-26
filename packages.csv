@@ -41,6 +41,9 @@
 ,sxiv
 ,sxhkd
 ,xdg-user-dirs
+,cowsay
+,fortune-mod
 A,betterlockscreen
 A,brave-bin
 A,libxft-bgra
+A,mutt-wizard
