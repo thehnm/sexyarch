@@ -87,6 +87,7 @@ editpackages() { \
 
 installyay() { \
     dialog --infobox "Installing yay, an AUR helper..." 8 50
+    [ -f /usr/bin/yay ] && return 0
     pacman --noconfirm -S git &>/dev/null
     sudo -u $name git clone https://aur.archlinux.org/yay.git /tmp/yay &>/dev/null
     cd /tmp/yay
