@@ -95,7 +95,6 @@ singleaurinstall() { \
     sudo -u $name yay --noconfirm -S "$1" &>/dev/null
 }
 
-
 editpackages() { \
     curl https://raw.githubusercontent.com/thehnm/tarbs/master/packages.csv > /tmp/packages.csv
     dialog --yesno "Do you want to edit the packages file?" 10 80 3>&2 2>&1 1>&3
@@ -106,37 +105,11 @@ editpackages() { \
     esac
 }
 
-install_dwm_pkgs() {
-    dialog --infobox "Install dwm dependencies..." 8 50
-    singleinstall "libxft"
-    singleinstall "libxinerama"
-}
-
 setup_libinput() { \
     dialog --infobox "Configure libinput for laptops..." 8 50
     singleinstall "libinput"
     ln -s /usr/share/X11/xorg.conf.d/40-libinput.conf /etc/X11/xorg.conf.d/40-libinput.conf
     curl https://raw.githubusercontent.com/thehnm/tarbs/master/configs/40-libinput.conf > /usr/share/X11/xorg.conf.d/40-libinput.conf
-}
-
-install() {
-    singleinstall "xorg-server"
-    singleinstall "xorg-xinit"
-    singleinstall "xorg-xsetroot"
-    singleinstall "git"
-
-    install_dwm_pkgs
-    [ "$laptop" = 1 ] && setup_libinput
-
-    total=$(wc -l < /tmp/packages.csv)
-    aurinstalled=$(pacman -Qm | awk '{print $1}')
-    while IFS=, read -r tag program; do
-    n=$((n+1))
-    case "$tag" in
-        "") pacmaninstall "$program" ;;
-        "A") aurinstall "$program" ;;
-    esac
-    done < /tmp/packages.csv ;
 }
 
 putgitrepo() { \
@@ -150,10 +123,32 @@ putgitrepo() { \
 }
 
 gitrootmakeinstall() { \
-    dialog --infobox "Downloading and installing $3..." 4 60
-    sudo -u $name git clone "$1" "$2/$3" &> /dev/null
-    cd "$2/$3"
+    putgitrepo "$1" "$userdatadir" "${1##*/}"
+    dialog --infobox "Installing ${1##*/}..." 4 60
+    cd "$userdatadir/${1##*/}"
     make install &> /dev/null
+}
+
+install() {
+    singleinstall "xorg-server"
+    singleinstall "xorg-xinit"
+    singleinstall "xorg-xsetroot"
+    singleinstall "git"
+    singleinstall "libxft"
+    singleinstall "libxinerama"
+
+    [ "$laptop" = 1 ] && setup_libinput
+
+    total=$(wc -l < /tmp/packages.csv)
+    aurinstalled=$(pacman -Qm | awk '{print $1}')
+    while IFS=, read -r tag program; do
+    n=$((n+1))
+    case "$tag" in
+        "") pacmaninstall "$program" ;;
+        "A") aurinstall "$program" ;;
+        "G") gitrootmakeinstall "$program" ;;
+    esac
+    done < /tmp/packages.csv ;
 }
 
 installdotfiles() { \
@@ -279,11 +274,6 @@ installdotfiles
 setshell "/usr/bin/dash"
 
 setinteractiveshell "/usr/bin/zsh"
-
-gitrootmakeinstall "https://github.com/thehnm/dwm" "$userdatadir" "dwm"
-gitrootmakeinstall "https://github.com/thehnm/st" "$userdatadir" "st"
-gitrootmakeinstall "https://github.com/thehnm/dmenu" "$userdatadir" "dmenu"
-gitrootmakeinstall "https://github.com/thehnm/dmenu" "$userdatadir" "slock"
 
 sudo -u "$name" curl -sfL git.io/antibody | sh -s - -b /home/"$name"/.local/bin/
 
