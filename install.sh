@@ -58,6 +58,7 @@ adduserandpass() { \
     useradd -m -g wheel -s /bin/bash "$name" &>/dev/null ||
     usermod -a -G wheel "$name" && mkdir -p /home/"$name" && chown "$name":wheel /home/"$name"
     usermod -a -G video "$name"
+    repodir="/home/$name/.local/share"; mkdir -p "$repodir"; chown -R "$name":wheel $(dirname "$repodir")
     echo "$name:$pass1" | chpasswd
     unset pass1 pass2 ;
 }
@@ -65,6 +66,23 @@ adduserandpass() { \
 refreshkeys() { \
     dialog --infobox "Refreshing Arch Keyring..." 4 40
     pacman --noconfirm -Sy archlinux-keyring &>/dev/null
+}
+
+setup_libinput() { \
+    dialog --infobox "Configure libinput for laptops..." 8 50
+    singleinstall "libinput"
+    ln -s /usr/share/X11/xorg.conf.d/40-libinput.conf /etc/X11/xorg.conf.d/40-libinput.conf
+    curl https://raw.githubusercontent.com/thehnm/tarbs/master/configs/40-libinput.conf > /usr/share/X11/xorg.conf.d/40-libinput.conf
+}
+
+editpackages() { \
+    curl https://raw.githubusercontent.com/thehnm/tarbs/master/packages.csv > /tmp/packages.csv
+    dialog --yesno "Do you want to edit the packages file?" 10 80 3>&2 2>&1 1>&3
+    case $? in
+        0 ) vim $1
+            break;;
+        1 ) break;;
+    esac
 }
 
 installyay() { \
@@ -95,38 +113,25 @@ singleaurinstall() { \
     sudo -u $name yay --noconfirm -S "$1" &>/dev/null
 }
 
-editpackages() { \
-    curl https://raw.githubusercontent.com/thehnm/tarbs/master/packages.csv > /tmp/packages.csv
-    dialog --yesno "Do you want to edit the packages file?" 10 80 3>&2 2>&1 1>&3
-    case $? in
-        0 ) vim $1
-            break;;
-        1 ) break;;
-    esac
+gitmakeinstall() {
+	progname="$(basename "$1" .git)"
+	dir="$repodir/$progname"
+    dialog --title "Installation" --infobox "Installing \`$progname\` ($n of $total) via \`git\` and \`make\`." 5 70
+	sudo -u "$name" git clone --depth 1 "$1" "$dir" >/dev/null 2>&1 || { cd "$dir" || return ; sudo -u "$name" git pull --force origin master;}
+	cd "$dir" || exit
+	make >/dev/null 2>&1
+	make install >/dev/null 2>&1
+	cd /tmp || return ;
 }
 
-setup_libinput() { \
-    dialog --infobox "Configure libinput for laptops..." 8 50
-    singleinstall "libinput"
-    ln -s /usr/share/X11/xorg.conf.d/40-libinput.conf /etc/X11/xorg.conf.d/40-libinput.conf
-    curl https://raw.githubusercontent.com/thehnm/tarbs/master/configs/40-libinput.conf > /usr/share/X11/xorg.conf.d/40-libinput.conf
-}
-
-putgitrepo() { \
-    # Downlods a gitrepo $1 and places the files in $2 only overwriting conflicts
-    dialog --infobox "Downloading $1..." 4 60
-    dir=$(mktemp -d)
-    chown -R "$name":wheel "$dir"
-    sudo -u "$name" git clone "$1" "$dir"/"$3" &>/dev/null &&
-    sudo -u "$name" mkdir -p "$2" &&
-    sudo -u "$name" cp -rT "$dir"/"$3" "$2"/"$3"
-}
-
-gitrootmakeinstall() { \
-    putgitrepo "$1" "$userdatadir" "${1##*/}"
-    dialog --infobox "Installing ${1##*/}..." 4 60
-    cd "$userdatadir/${1##*/}"
-    make install &> /dev/null
+putgitrepo() { # Downloads a gitrepo $1 and places the files in $2 only overwriting conflicts
+	dialog --infobox "Downloading and installing config files..." 4 60
+	[ -z "$3" ] && branch="master" || branch="$3"
+	dir=$(mktemp -d)
+	[ ! -d "$2" ] && mkdir -p "$2"
+	chown -R "$name":wheel "$dir" "$2"
+	sudo -u "$name" git clone --recursive -b "$branch" --depth 1 "$1" "$dir" >/dev/null 2>&1
+	sudo -u "$name" cp -rfT "$dir" "$2"
 }
 
 install() {
@@ -146,7 +151,7 @@ install() {
     case "$tag" in
         "") pacmaninstall "$program" ;;
         "A") aurinstall "$program" ;;
-        "G") gitrootmakeinstall "$program" ;;
+        "G") gitmakeinstall "$program" ;;
     esac
     done < /tmp/packages.csv ;
 }
@@ -277,7 +282,9 @@ setinteractiveshell "/usr/bin/zsh"
 
 sudo -u "$name" curl -sfL git.io/antibody | sh -s - -b /home/"$name"/.local/bin/
 
-putgitrepo "$vundlerepo" "/home/$name/.config/nvim/bundle/" "Vundle.vim"
+putgitrepo "$vundlerepo" "/home/$name/.config/nvim/bundle/Vundle.vim"
+
+putgitrepo "$dotfilesrepo" "/home/$name"
 
 serviceinit NetworkManager
 
