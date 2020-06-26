@@ -1,49 +1,50 @@
-,neovim,A tidier vim with some useful features
-,python-neovim,Python client for neovim
-,dash,minimal POSIX compliant shell
-,networkmanager,Network connection manager
-,nm-connection-editor,GUI editing of network connection
-,dunst,suckless notification system
-,gnome-keyring,Keyring needed by some applications
-,libsecret,Library for gnome-keyring
-,pass,Simple terminal password manager
-,ctags,Generates index file of language objects in source files
-,udiskie,Disk automounter daemon
-,alsa-utils,Utilities for ALSA
-,openssh,Allows for establishing SSH connections
-,pulseaudio,Primary used sound server
-,pulsemixer,Utility for pulseaudio
-,pavucontrol,GUI utility for pulseaudio
-,playerctl,mpris media player controller for spotify, brave, ...
-,lxappearance,GTK+ theme switcher
-,qt5ct,QT5 configuration utility
-,gnome-themes-extra,Adds additional gnome themes
-,mupdf,PDF viewer
-,zathura,Better PDF viewer
-,zathura-pdf-mupdf,For mupdf compatibility
-,libmpdclient,API library for mpd
-,zsh,Primary interactive shell
-,scrot,CLI screenshot utility
-,seahorse,GUI application for PGP keys
-,otf-fira-mono,Primary monospace font
-,ttf-linux-libertine,Primary sans and serif fonts included
-,noto-fonts-cjk,For non-latin fonts
-,biber,BibTex replacement for biblatex
-,light,Set background light
-,mpd,Application for playing music
-,mpc,CLI utility for controlling mpd
-,ncmpcpp,CLI front-end for mpd
-,ranger,File manager
-,feh,Image viewer
-,sxiv,Better image viewer
-,sxhkd,Manages hotkeys
-,xdg-user-dirs,Sets default home directories
-,cowsay,Talking cow
-,fortune-mod,Cookie fortune program
-A,brave-bin,Primary browser
-A,libxft-bgra,Allows for colored fonts
-A,mutt-wizard,Terminal email program
-G,https://github.com/thehnm/dwm,suckless window manager
-G,https://github.com/thehnm/st,suckless terminal
-G,https://github.com/thehnm/dmenu,suckless menu
-G,https://github.com/thehnm/slock,suckless screenlocker
+#TAG,NAME IN REPO (or git url),PURPOSE (should be a verb phrase to sound right while installing)
+,neovim,"A tidier vim with some useful features"
+,python-neovim,"Python client for neovim"
+,dash,"minimal POSIX compliant shell"
+,networkmanager,"Network connection manager"
+,nm-connection-editor,"GUI editing of network connection"
+,dunst,"suckless notification system"
+,gnome-keyring,"Keyring needed by some applications"
+,libsecret,"Library for gnome-keyring"
+,pass,"Simple terminal password manager"
+,ctags,"Generates index file of language objects in source files"
+,udiskie,"Disk automounter daemon"
+,alsa-utils,"Utilities for ALSA"
+,openssh,"Allows for establishing SSH connections"
+,pulseaudio,"Primary used sound server"
+,pulsemixer,"Utility for pulseaudio"
+,pavucontrol,"GUI utility for pulseaudio"
+,playerctl,"mpris media player controller for spotify, brave, ..."
+,lxappearance,"GTK+ theme switcher"
+,qt5ct,"QT5 configuration utility"
+,gnome-themes-extra,"Adds additional gnome themes"
+,mupdf,"PDF viewer"
+,zathura,"Better PDF viewer"
+,zathura-pdf-mupdf,"For mupdf compatibility"
+,libmpdclient,"API library for mpd"
+,zsh,"Primary interactive shell"
+,scrot,"CLI screenshot utility"
+,seahorse,"GUI application for PGP keys"
+,otf-fira-mono,"Primary monospace font"
+,ttf-linux-libertine,"Primary sans and serif fonts included"
+,noto-fonts-cjk,"For non-latin fonts"
+,biber,"BibTex replacement for biblatex"
+,light,"Set background light"
+,mpd,"Application for playing music"
+,mpc,"CLI utility for controlling mpd"
+,ncmpcpp,"CLI front-end for mpd"
+,ranger,"File manager"
+,feh,"Image viewer"
+,sxiv,"Better image viewer"
+,sxhkd,"Manages hotkeys"
+,xdg-user-dirs,"Sets default home directories"
+,cowsay,"Talking cow"
+,fortune-mod,"Cookie fortune program"
+A,brave-bin,"Primary browser"
+A,libxft-bgra,"Allows for colored fonts"
+A,mutt-wizard,"Terminal email program"
+G,https://github.com/thehnm/dwm,"suckless window manager"
+G,https://github.com/thehnm/st,"suckless terminal"
+G,https://github.com/thehnm/dmenu,"suckless menu"
+G,https://github.com/thehnm/slock,"suckless screenlocker"
