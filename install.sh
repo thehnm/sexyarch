@@ -275,8 +275,6 @@ installyay
 
 install
 
-installdotfiles
-
 setshell "/usr/bin/dash"
 
 setinteractiveshell "/usr/bin/zsh"
