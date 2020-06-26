@@ -1,7 +1,6 @@
 #!/bin/bash
 
 [ -z ${dotfilesrepo+x} ] && dotfilesrepo="https://github.com/thehnm/dotfiles.git"
-[ -z ${vundlerepo+x} ] && vundlerepo="https://github.com/VundleVim/Vundle.vim.git"
 [ -z ${lightdmconfig+x} ] && lightdmconfig=/etc/lightdm/lightdm.conf
 [ -z ${lightdmgtkconfig+x} ] && lightdmgtkconfig=/etc/lightdm/lightdm-gtk-greeter.conf
 [ -z ${dwmdesktopfile+x} ] && dwmdesktopfile=/usr/share/xsessions/dwm.desktop
@@ -280,8 +279,6 @@ setshell "/usr/bin/dash"
 setinteractiveshell "/usr/bin/zsh"
 
 sudo -u "$name" curl -sfL git.io/antibody | sh -s - -b /home/"$name"/.local/bin/
-
-putgitrepo "$vundlerepo" "/home/$name/.config/nvim/bundle/Vundle.vim"
 
 putgitrepo "$dotfilesrepo" "/home/$name"
 
