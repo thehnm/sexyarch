@@ -95,7 +95,7 @@ installyay() { \
 }
 
 pacmaninstall() { \
-    dialog --title "Installation" --infobox "Installing \`$1\` ($n of $total)." 5 70
+    dialog --title "Installation" --infobox "Installing \`$1\` ($n of $total). $2" 5 70
     pacman --noconfirm --needed -S "$1" &>/dev/null
 }
 
@@ -105,7 +105,7 @@ singleinstall() { \
 }
 
 aurinstall() { \
-    dialog --title "Installation" --infobox "Installing \`$1\` ($n of $total) from the AUR." 5 70
+    dialog --title "Installation" --infobox "Installing \`$1\` ($n of $total) from the AUR. $2" 5 70
     sudo -u $name yay --noconfirm -S "$1" &>/dev/null
 }
 
@@ -117,7 +117,7 @@ singleaurinstall() { \
 gitmakeinstall() {
 	progname="$(basename "$1" .git)"
 	dir="$repodir/$progname"
-    dialog --title "Installation" --infobox "Installing \`$progname\` ($n of $total) via \`git\` and \`make\`." 5 70
+    dialog --title "Installation" --infobox "Installing \`$progname\` ($n of $total) via \`git\` and \`make\`. $2" 5 70
 	sudo -u "$name" git clone --depth 1 "$1" "$dir" >/dev/null 2>&1 || { cd "$dir" || return ; sudo -u "$name" git pull --force origin master;}
 	cd "$dir" || exit
 	make >/dev/null 2>&1
@@ -147,12 +147,12 @@ install() {
 
     total=$(wc -l < /tmp/packages.csv)
     aurinstalled=$(pacman -Qm | awk '{print $1}')
-    while IFS=, read -r tag program; do
+    while IFS=, read -r tag program comment; do
     n=$((n+1))
     case "$tag" in
-        "") pacmaninstall "$program" ;;
-        "A") aurinstall "$program" ;;
-        "G") gitmakeinstall "$program" ;;
+        "") pacmaninstall "$program" "$comment" ;;
+        "A") aurinstall "$program" "$comment" ;;
+        "G") gitmakeinstall "$program" "$comment" ;;
     esac
     done < /tmp/packages.csv ;
 }
