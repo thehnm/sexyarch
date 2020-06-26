@@ -29,6 +29,7 @@
 ,otf-fira-mono,"Primary monospace font"
 ,ttf-linux-libertine,"Primary sans and serif fonts included"
 ,noto-fonts-cjk,"For non-latin fonts"
+,ttf-joypixels,"Font for emojis"
 ,biber,"BibTex replacement for biblatex"
 ,light,"Set background light"
 ,mpd,"Application for playing music"
