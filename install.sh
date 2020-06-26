@@ -139,7 +139,6 @@ install() {
     singleinstall "xorg-xinit"
     singleinstall "xorg-xsetroot"
     singleinstall "git"
-    singleinstall "libxft"
     singleinstall "libxinerama"
 
     [ "$laptop" = 1 ] && setup_libinput
