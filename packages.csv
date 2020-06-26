@@ -47,3 +47,7 @@ A,betterlockscreen
 A,brave-bin
 A,libxft-bgra
 A,mutt-wizard
+G,https://github.com/thehnm/dwm
+G,https://github.com/thehnm/st
+G,https://github.com/thehnm/dmenu
+G,https://github.com/thehnm/slock
