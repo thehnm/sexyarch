@@ -42,6 +42,7 @@
 ,xdg-user-dirs,"Sets default home directories"
 ,cowsay,"Talking cow"
 ,fortune-mod,"Cookie fortune program"
+,unclutter,"Hide mouse after timeout"
 A,brave-bin,"Primary browser"
 A,libxft-bgra,"Allows for colored fonts"
 A,mutt-wizard,"Terminal email program"
