@@ -193,24 +193,6 @@ resetpulse() { \
     sudo -n "$name" pulseaudio --start
 }
 
-configurelightdm() {
-    dialog --infobox "Set lightdm greeter session..." 10 50
-    sed -i "s/#greeter-session=.*/greeter-session=lightdm-gtk-greeter/g" "$lightdmconfig"
-    sed -i "s/#indicators=/indicators=/g" "$lightdmgtkconfig" # Remove panel
-    sed -i -e "\$ahide-user-image=true" "$lightdmgtkconfig" # Hide user icon
-}
-
-adddwmsession() {
-    dialog --infobox "Create dwm session file for lightdm..." 10 50
-    mkdir -p /usr/share/xsessions/
-    echo "[Desktop Entry]" >> "$dwmdesktopfile"
-    echo "Encoding=UTF-8" >> "$dwmdesktopfile"
-    echo "Name=dwm" >> "$dwmdesktopfile"
-    echo "Comment=Execute dwm" >> "$dwmdesktopfile"
-    echo "Exec=/etc/lightdm/Xsession" >> "$dwmdesktopfile"
-    echo "Type=Application" >> "$dwmdesktopfile"
-}
-
 miscellaneous() {
 
     systembeepoff
