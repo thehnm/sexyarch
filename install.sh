@@ -4,6 +4,11 @@
 
 ###############################################################################
 
+infobox() {
+    dialog --infobox "$1" "$2" "$3"
+    eval "$4" &>/dev/null
+}
+
 initialcheck() {
     pacman -S --noconfirm --needed dialog || { echo "Are you sure you're running this as the root user? Are you sure you're using an Arch-based distro? ;-) Are you sure you have an internet connection?"; exit; } ;}
 
@@ -244,7 +249,7 @@ setshell "/usr/bin/dash"
 
 setinteractiveshell "/usr/bin/zsh"
 
-sudo -u "$name" curl -sfL git.io/antibody | sh -s - -b /home/"$name"/.local/bin/
+infobox "Install antibody zsh plugin manager" "4" "80" "sudo -u $name curl -sfL git.io/antibody | sh -s - -b /home/$name/.local/bin/"
 
 putgitrepo "$dotfilesrepo" "/home/$name"
 sudo -u "$name" git config --local status.showUntrackedFiles no
