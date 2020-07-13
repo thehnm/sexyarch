@@ -1,9 +1,6 @@
 #!/bin/bash
 
 [ -z ${dotfilesrepo+x} ] && dotfilesrepo="https://github.com/thehnm/dotfiles.git"
-[ -z ${lightdmconfig+x} ] && lightdmconfig=/etc/lightdm/lightdm.conf
-[ -z ${lightdmgtkconfig+x} ] && lightdmgtkconfig=/etc/lightdm/lightdm-gtk-greeter.conf
-[ -z ${dwmdesktopfile+x} ] && dwmdesktopfile=/usr/share/xsessions/dwm.desktop
 
 ###############################################################################
 
