@@ -155,18 +155,6 @@ install() {
     done < /tmp/packages.csv ;
 }
 
-installdotfiles() { \
-    dialog --infobox "Installing my dotfiles..." 4 60
-    userhome=/home/$name
-    cd "$userhome"
-    sudo -u "$name" git clone --bare "$dotfilesrepo" .dotfiles
-    sudo -u "$name" git --git-dir="$userhome"/.dotfiles/ --work-tree="$userhome" checkout -f
-    sudo -u "$name" git --git-dir="$username"/.dotfiles/ --work-tree="$userhome" config --local status.showUntrackedFiles no
-    if [ "$?" = "1" ]; then
-        dialog --msgbox "Installation of dotfiles failed! Check for preexisting files!" 5 80
-    fi
-}
-
 serviceinit() {
     for service in "$@"; do
         dialog --infobox "Enabling \"$service\"..." 4 40
