@@ -280,6 +280,9 @@ setinteractiveshell "/usr/bin/zsh"
 sudo -u "$name" curl -sfL git.io/antibody | sh -s - -b /home/"$name"/.local/bin/
 
 putgitrepo "$dotfilesrepo" "/home/$name"
+sudo -u "$name" git config --local status.showUntrackedFiles no
+sudo -u "$name" git update-index --assume-unchanged README.md
+sudo -u "$name" rm README.md
 
 serviceinit NetworkManager
 
