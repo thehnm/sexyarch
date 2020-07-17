@@ -116,24 +116,24 @@ singleaurinstall() { \
 }
 
 gitmakeinstall() {
-	progname="$(basename "$1" .git)"
-	dir="$repodir/$progname"
+    progname="$(basename "$1" .git)"
+    dir="$repodir/$progname"
     dialog --title "Installation" --infobox "Installing \`$progname\` ($n of $total) via \`git\` and \`make\`. $2" 5 70
-	sudo -u "$name" git clone --depth 1 "$1" "$dir" >/dev/null 2>&1 || { cd "$dir" || return ; sudo -u "$name" git pull --force origin master;}
-	cd "$dir" || exit
-	make >/dev/null 2>&1
-	make install >/dev/null 2>&1
-	cd /tmp || return ;
+    sudo -u "$name" git clone --depth 1 "$1" "$dir" >/dev/null 2>&1 || { cd "$dir" || return ; sudo -u "$name" git pull --force origin master;}
+    cd "$dir" || exit
+    make >/dev/null 2>&1
+    make install >/dev/null 2>&1
+    cd /tmp || return ;
 }
 
 putgitrepo() { # Downloads a gitrepo $1 and places the files in $2 only overwriting conflicts
-	dialog --infobox "Downloading and installing config files..." 4 60
-	[ -z "$3" ] && branch="master" || branch="$3"
-	dir=$(mktemp -d)
-	[ ! -d "$2" ] && mkdir -p "$2"
-	chown -R "$name":wheel "$dir" "$2"
-	sudo -u "$name" git clone --recursive -b "$branch" --depth 1 "$1" "$dir" >/dev/null 2>&1
-	sudo -u "$name" cp -rfT "$dir" "$2"
+    dialog --infobox "Downloading and installing config files..." 4 60
+    [ -z "$3" ] && branch="master" || branch="$3"
+    dir=$(mktemp -d)
+    [ ! -d "$2" ] && mkdir -p "$2"
+    chown -R "$name":wheel "$dir" "$2"
+    sudo -u "$name" git clone --recursive -b "$branch" --depth 1 "$1" "$dir" >/dev/null 2>&1
+    sudo -u "$name" cp -rfT "$dir" "$2"
 }
 
 install() {
