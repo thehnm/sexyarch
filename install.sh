@@ -256,7 +256,7 @@ sudo -u "$name" git config --local status.showUntrackedFiles no
 sudo -u "$name" git update-index --assume-unchanged README.md
 sudo -u "$name" rm README.md
 
-serviceinit NetworkManager
+serviceinit NetworkManager cronie
 
 newperms "%wheel ALL=(ALL) ALL\\n%wheel ALL=(ALL) NOPASSWD: /usr/bin/shutdown,/usr/bin/reboot,/usr/bin/systemctl suspend,/usr/bin/wifi-menu,/usr/bin/mount,/usr/bin/umount,/usr/bin/pacman -Syu,/usr/bin/pacman -Syyu,/usr/bin/packer -Syu,/usr/bin/packer -Syyu,/usr/bin/systemctl restart NetworkManager,/usr/bin/rc-service NetworkManager restart,/usr/bin/pacman -Syyu --noconfirm,/usr/bin/loadkeys,/usr/bin/yay"
 
