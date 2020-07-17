@@ -59,7 +59,7 @@ adduserandpass() { \
     useradd -m -g wheel -s /bin/bash "$name" &>/dev/null ||
     usermod -a -G wheel "$name" && mkdir -p /home/"$name" && chown "$name":wheel /home/"$name"
     usermod -a -G video "$name"
-    repodir="/home/$name/.local/share"; mkdir -p "$repodir"; chown -R "$name":wheel $(dirname "$repodir")
+    repodir="/home/$name/.local/src"; mkdir -p "$repodir"; chown -R "$name":wheel $(dirname "$repodir")
     echo "$name:$pass1" | chpasswd
     unset pass1 pass2 ;
 }
