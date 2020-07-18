@@ -110,6 +110,7 @@ aurinstall() { \
     yes | sudo -u $name yay --noconfirm -S "$1" &>/dev/null
 }
 
+# Requires the git repository to have some kind of build file/Makefile
 gitmakeinstall() {
     progname="$(basename "$1" .git)"
     dir="$repodir/$progname"
