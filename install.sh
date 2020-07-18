@@ -76,11 +76,11 @@ setup_libinput() { \
     curl https://raw.githubusercontent.com/thehnm/tarbs/master/configs/40-libinput.conf > /usr/share/X11/xorg.conf.d/40-libinput.conf
 }
 
-editpackages() { \
+downloadandeditpackages() { \
     curl https://raw.githubusercontent.com/thehnm/tarbs/master/packages.csv > /tmp/packages.csv
     dialog --yesno "Do you want to edit the packages file?" 10 80 3>&2 2>&1 1>&3
     case $? in
-        0 ) vim $1
+        0 ) vim /tmp/packages.csv
             break;;
         1 ) break;;
     esac
@@ -231,7 +231,7 @@ islaptop
 
 adduserandpass
 
-editpackages "/tmp/packages.csv"
+downloadandeditpackages
 
 refreshkeys
 
