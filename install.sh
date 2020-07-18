@@ -10,7 +10,7 @@ infobox() {
 }
 
 initialcheck() {
-    pacman -S --noconfirm --needed dialog || { echo "Are you sure you're running this as the root user? Are you sure you're using an Arch-based distro? ;-) Are you sure you have an internet connection?"; exit; } ;}
+    pacman -S --noconfirm --needed dialog git || { echo "Are you sure you're running this as the root user? Are you sure you're using an Arch-based distro? ;-) Are you sure you have an internet connection?"; exit; } ;}
 
 welcomemsg() { \
     dialog --title "Welcome!" --msgbox "Welcome to thehnm's Arch Linux Installation Script!\\n\\nThis script will automatically install a fully-featured dwm Arch Linux desktop, which I use as my main machine.\\n\\n-thehnm" 10 60
@@ -71,7 +71,7 @@ refreshkeys() { \
 
 setup_libinput() { \
     dialog --infobox "Configure libinput for laptops..." 8 50
-    singleinstall "libinput"
+    singleinstall "libinput" "Input device management and event handling library"
     ln -s /usr/share/X11/xorg.conf.d/40-libinput.conf /etc/X11/xorg.conf.d/40-libinput.conf
     curl https://raw.githubusercontent.com/thehnm/tarbs/master/configs/40-libinput.conf > /usr/share/X11/xorg.conf.d/40-libinput.conf
 }
@@ -101,7 +101,7 @@ pacmaninstall() { \
 }
 
 singleinstall() { \
-    dialog --title "Installation" --infobox "Installing \`$1\`." 5 70
+    dialog --title "Installation" --infobox "Installing \`$1\`. $2" 5 70
     pacman --noconfirm --needed -S "$1" &>/dev/null
 }
 
@@ -133,11 +133,10 @@ putgitrepo() { # Downloads a gitrepo $1 and places the files in $2 only overwrit
 }
 
 install() {
-    singleinstall "xorg-server"
-    singleinstall "xorg-xinit"
-    singleinstall "xorg-xsetroot"
-    singleinstall "git"
-    singleinstall "libxinerama"
+    singleinstall "xorg-server" "Xorg X Server"
+    singleinstall "xorg-xinit" "X.Org initialisation program"
+    singleinstall "xorg-xsetroot" "Utility for setting root window to pattern or color"
+    singleinstall "libxinerama" "X11 Xinerama extension library"
 
     [ "$laptop" = 1 ] && setup_libinput
 
