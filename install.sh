@@ -107,7 +107,7 @@ singleinstall() { \
 
 aurinstall() { \
     dialog --title "Installation" --infobox "Installing \`$1\` ($n of $total) from the AUR. $2" 5 70
-    sudo -u $name yay --noconfirm -S "$1" &>/dev/null
+    yes | sudo -u $name yay --noconfirm -S "$1" &>/dev/null
 }
 
 singleaurinstall() { \
