@@ -1,6 +1,10 @@
 #!/bin/bash
 
 [ -z ${dotfilesrepo+x} ] && dotfilesrepo="https://github.com/thehnm/dotfiles.git"
+[ -z ${lang+x} ] && lang="LANG=en_US.UTF-8"
+[ -z ${lcall+x} ] && lcall="LC_ALL=en_US.UTF-8"
+[ -z ${editor+x} ] && editor="vim"
+[ -z ${timezone+x} ] && timezone="Europe/Berlin"
 
 ###############################################################################
 
@@ -18,6 +22,43 @@ welcomemsg() { \
 
 preinstallmsg() { \
     dialog --title "Start installing the script!" --yes-label "Let's go!" --no-label "No, nevermind!" --yesno "It will take some time, but when done, you can relax even more with your complete system.\\n\\nNow just press <Let's go!> and the system will begin installation!" 13 60 || { clear; exit; }
+}
+
+settimezone() {
+    dialog --title "Timezone" --yes-label "Change timezone" --no-label "Keep going" --yesno "The following timezone will be used:\n\n$timezone" 10 50
+    [ "$?" = "0" ] && timezone=$(dialog --inputbox "Enter the timezone" 10 60 3>&1 1>&2 2>&3 3>&1)
+    ln -sf /usr/share/zoneinfo/"$timezone" /etc/localtime
+    while [[ "$?" = "1" ]]; do
+        timezone=$(dialog --inputbox "Wrong format <Continent/City>. Reenter the timezone" 10 60 3>&1 1>&2 2>&3 3>&1)
+        ln -sf /usr/share/zoneinfo/"$timezone" /etc/localtime
+    done
+    hwclock --systohc
+}
+
+genlocale() {
+    dialog --title "locale.gen" --yes-label "Edit locale.gen" --no-label "Keep going" --yesno "The following locale will be generated:\n\nen_US UTF-8" 10 50
+    case $? in
+        0 ) eval "$editor /etc/locale.gen"
+            break;;
+        1 ) sed -i "s/\#en_US/en_US/" /etc/locale.gen
+            break;;
+    esac
+    locale-gen &> /dev/null
+}
+
+genandeditlocaleconf() {
+    echo "$lang" > /etc/locale.conf
+    echo "$lcall" >> /etc/locale.conf
+    dialog --title "The following locale is set:" --yes-label "Edit defaults" --no-label "Don't edit" --yesno "$lang\n$lcall" 10 50
+    [ "$?" = "0" ] && eval "$editor /etc/locale.conf"
+}
+
+sethostname() {
+    hostname=$(dialog --inputbox "Enter your hostname" 10 60 3>&1 1>&2 2>&3 3>&1)
+    echo "$hostname" > /etc/hostname
+    echo "127.0.0.1 localhost" > /etc/hosts
+    echo "::1 localhost" >> /etc/hosts
+    echo "127.0.1.1 $hostname.localdomain $hostname" >> /etc/hosts
 }
 
 islaptop() { \
@@ -216,6 +257,14 @@ initialcheck
 
 # Welcome user.
 welcomemsg
+
+settimezone
+
+genlocale
+
+genandeditlocaleconf
+
+sethostname
 
 # Get and verify username and password.
 getuserandpass
