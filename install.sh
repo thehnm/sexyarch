@@ -110,11 +110,6 @@ aurinstall() { \
     yes | sudo -u $name yay --noconfirm -S "$1" &>/dev/null
 }
 
-singleaurinstall() { \
-    dialog --title "Installation" --infobox "Installing \`$1\` from the AUR." 5 70
-    sudo -u $name yay --noconfirm -S "$1" &>/dev/null
-}
-
 gitmakeinstall() {
     progname="$(basename "$1" .git)"
     dir="$repodir/$progname"
