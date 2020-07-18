@@ -121,7 +121,7 @@ downloadandeditpackages() { \
     curl https://raw.githubusercontent.com/thehnm/tarbs/master/packages.csv > /tmp/packages.csv
     dialog --yesno "Do you want to edit the packages file?" 10 80 3>&2 2>&1 1>&3
     case $? in
-        0 ) vim /tmp/packages.csv
+        0 ) eval "$editor /tmp/packages.csv"
             break;;
         1 ) break;;
     esac
