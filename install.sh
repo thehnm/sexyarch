@@ -242,6 +242,11 @@ miscellaneous() {
     sed -i "s/^#Color/Color/g" /etc/pacman.conf
     # Fix audio problem
     sed -i 's/^ autospawn/; autospawn/g' /etc/pulse/client.conf
+
+    # Create necessary directories
+    mkdir -p /home/$name/.config/zsh
+    mkdir -p /home/$name/.config/newsboat
+    mkdir -p /home/$name/.local/share/newsboat
 }
 
 finish() { \
