@@ -301,9 +301,9 @@ setinteractiveshell "/usr/bin/zsh"
 infobox "Install antibody zsh plugin manager" "4" "80" "sudo -u $name curl -sfL git.io/antibody | sh -s - -b /home/$name/.local/bin/"
 
 putgitrepo "$dotfilesrepo" "/home/$name"
-sudo -u "$name" git config --local status.showUntrackedFiles no
-sudo -u "$name" git update-index --assume-unchanged README.md
-sudo -u "$name" rm README.md
+cd "/home/$name" && sudo -u "$name" git config --local status.showUntrackedFiles no
+cd "/home/$name" && sudo -u "$name" git update-index --assume-unchanged README.md
+cd "/home/$name" && sudo -u "$name" rm README.md
 
 serviceinit NetworkManager cronie
 
