@@ -210,13 +210,13 @@ newperms() { \
 
 setshell() {
     dialog --infobox "Set shell..." 10 50
-    ln -sf $1 /bin/sh
-}
+    ln -sf /usr/bin/dash /bin/sh
 
-setinteractiveshell() {
     dialog --infobox "Set interactive shell..." 10 50
-    chsh -s $1
-    chsh -s $1 $name
+    chsh -s /usr/bin/zsh
+    chsh -s /usr/bin/zsh $name
+
+    infobox "Install antibody zsh plugin manager" "4" "80" "sudo -u $name curl -sfL git.io/antibody | sh -s - -b /home/$name/.local/bin/"
 }
 
 installdotfiles() {
@@ -301,11 +301,7 @@ installyay
 
 install
 
-setshell "/usr/bin/dash"
-
-setinteractiveshell "/usr/bin/zsh"
-
-infobox "Install antibody zsh plugin manager" "4" "80" "sudo -u $name curl -sfL git.io/antibody | sh -s - -b /home/$name/.local/bin/"
+setshell
 
 installdotfiles
 
