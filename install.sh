@@ -219,6 +219,13 @@ setinteractiveshell() {
     chsh -s $1 $name
 }
 
+installdotfiles() {
+    putgitrepo "$dotfilesrepo" "/home/$name"
+    cd /home/"$name" && sudo -u "$name" git config --local status.showUntrackedFiles no
+    cd /home/"$name" && sudo -u "$name" git update-index --assume-unchanged README.md
+    cd /home/"$name" && sudo -u "$name" rm README.md
+}
+
 systembeepoff() { \
     dialog --infobox "Getting rid of that retarded error beep sound..." 10 50
     rmmod pcspkr
@@ -300,10 +307,7 @@ setinteractiveshell "/usr/bin/zsh"
 
 infobox "Install antibody zsh plugin manager" "4" "80" "sudo -u $name curl -sfL git.io/antibody | sh -s - -b /home/$name/.local/bin/"
 
-putgitrepo "$dotfilesrepo" "/home/$name"
-cd "/home/$name" && sudo -u "$name" git config --local status.showUntrackedFiles no
-cd "/home/$name" && sudo -u "$name" git update-index --assume-unchanged README.md
-cd "/home/$name" && sudo -u "$name" rm README.md
+installdotfiles
 
 serviceinit NetworkManager cronie ntpdate
 
