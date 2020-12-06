@@ -243,10 +243,10 @@ miscellaneous() {
     # Fix audio problem
     sed -i 's/^ autospawn/; autospawn/g' /etc/pulse/client.conf
 
-    # Create necessary directories
-    mkdir -p /home/$name/.config/zsh
-    mkdir -p /home/$name/.config/newsboat
-    mkdir -p /home/$name/.local/share/newsboat
+    # Create config directories
+    sudo -u "$name" mkdir -p /home/"$name"/.config/zsh
+    sudo -u "$name" mkdir -p /home/"$name"/.config/newsboat
+    sudo -u "$name" mkdir -p /home/"$name"/.local/share/newsboat
 }
 
 finish() { \
