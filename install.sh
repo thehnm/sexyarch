@@ -177,6 +177,7 @@ install() {
     singleinstall "xorg-server" "Xorg X Server"
     singleinstall "xorg-xinit" "X.Org initialisation program"
     singleinstall "xorg-xsetroot" "Utility for setting root window to pattern or color"
+    singleinstall "xorg-xrandr" "Interface for RandR interface"
     singleinstall "libxinerama" "X11 Xinerama extension library"
 
     [ "$laptop" = 1 ] && setup_libinput
