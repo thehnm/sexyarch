@@ -250,10 +250,12 @@ miscellaneous() {
     # Fix audio problem
     sed -i 's/^ autospawn/; autospawn/g' /etc/pulse/client.conf
 
-    # Create config directories
-    sudo -u "$name" mkdir -p /home/"$name"/.config/zsh
-    sudo -u "$name" mkdir -p /home/"$name"/.config/newsboat
-    sudo -u "$name" mkdir -p /home/"$name"/.local/share/newsboat
+    # Create configuration directories
+    sudo -u "$name" mkdir -p /home/"$name"/.config/zsh ## Stores the zshrc
+    sudo -u "$name" mkdir -p /home/"$name"/.local/share/zsh ## Stores history file for zsh
+    sudo -u "$name" mkdir -p /home/"$name"/.config/notmuch ## Required by mutt-wizard
+    sudo -u "$name" mkdir -p /home/"$name"/.config/newsboat ## Stores newsboat config
+    sudo -u "$name" mkdir -p /home/"$name"/.local/share/newsboat ## Stores the cache and history file
 }
 
 finish() { \
