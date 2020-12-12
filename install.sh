@@ -166,7 +166,7 @@ gitmakeinstall() {
     progname="$(basename "$1" .git)"
     dir="$repodir/$progname"
     dialog --title "Installation" --infobox "Installing \`$progname\` ($n of $total) via \`git\` and \`make\`. $2" 5 70
-    sudo -u "$name" git clone --depth 1 "$1" "$dir" >/dev/null 2>&1 || { cd "$dir" || return ; sudo -u "$name" git pull --force origin master;}
+    putgitrepo "$1" "$dir"
     cd "$dir" || exit
     make >/dev/null 2>&1
     make install >/dev/null 2>&1
