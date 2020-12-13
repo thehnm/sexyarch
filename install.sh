@@ -298,8 +298,6 @@ downloadandeditpackages
 
 refreshkeys
 
-newperms "%wheel ALL=(ALL) NOPASSWD: ALL"
-
 installyay
 
 install
