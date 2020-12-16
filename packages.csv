@@ -25,7 +25,6 @@
 ,libmpdclient,"API library for mpd"
 ,zsh,"Primary interactive shell"
 ,scrot,"CLI screenshot utility"
-,seahorse,"GUI application for PGP keys"
 ,otf-fira-mono,"Primary monospace font"
 ,ttf-linux-libertine,"Primary sans and serif fonts included"
 ,noto-fonts-cjk,"For non-latin fonts"
