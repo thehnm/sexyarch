@@ -222,9 +222,7 @@ setshell() {
 
 installdotfiles() {
     putgitrepo "$dotfilesrepo" "/home/$name"
-    cd /home/"$name" && sudo -u "$name" git config --local status.showUntrackedFiles no
-    cd /home/"$name" && sudo -u "$name" git update-index --assume-unchanged README.md
-    cd /home/"$name" && sudo -u "$name" rm README.md
+    cd /home/"$name" && sudo -u "$name" git config --local status.showUntrackedFiles no && sudo -u "$name" git update-index --assume-unchanged README.md && rm README.md
 }
 
 systembeepoff() { \
