@@ -12,20 +12,17 @@ However, this script will already configure some settings such as locales, timez
 ## Script
 
 The next step after installing Arch Linux would be to download this script.
+
 ```
 curl -LO https://raw.githubusercontent.com/thehnm/tarbs/master/install.sh
 bash install.sh
 ```
+
 What this script will do:
 
-* Setup timezone
-* Setup locale
-* Set hostname
-* Setup user
-* Install programs needed for my configuraton/workflow. See packages.csv for further information
-* Install my dotfiles
-
-
-## TODO
-
-- Get shorter link
+- Setup timezone
+- Setup locale
+- Set hostname
+- Setup user
+- Install programs needed for my configuraton/workflow. See packages.csv for further information
+- Install my dotfiles
