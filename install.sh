@@ -111,6 +111,7 @@ refreshkeys() { \
 }
 
 setup_libinput() { \
+    cd "$currentdir"
     dialog --infobox "Configure libinput for laptops..." 8 50
     singleinstall "libinput" "Input device management and event handling library"
     ln -s /usr/share/X11/xorg.conf.d/40-libinput.conf /etc/X11/xorg.conf.d/40-libinput.conf
@@ -122,6 +123,7 @@ setup_libinput() { \
 }
 
 downloadandeditpackages() { \
+    cd "$currentdir"
     [ ! -f packages.csv ] && curl https://raw.githubusercontent.com/thehnm/tarbs/master/packages.csv > packages.csv
     dialog --yesno "Do you want to edit the packages file?" 10 80 3>&2 2>&1 1>&3
     case $? in
@@ -177,6 +179,7 @@ gitmakeinstall() {
 }
 
 install() {
+    cd "$currentdir"
     singleinstall "xorg-server" "Xorg X Server"
     singleinstall "xorg-xinit" "X.Org initialisation program"
     singleinstall "xorg-xsetroot" "Utility for setting root window to pattern or color"
