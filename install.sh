@@ -114,14 +114,18 @@ setup_libinput() { \
     dialog --infobox "Configure libinput for laptops..." 8 50
     singleinstall "libinput" "Input device management and event handling library"
     ln -s /usr/share/X11/xorg.conf.d/40-libinput.conf /etc/X11/xorg.conf.d/40-libinput.conf
-    curl https://raw.githubusercontent.com/thehnm/tarbs/master/configs/40-libinput.conf > /usr/share/X11/xorg.conf.d/40-libinput.conf
+    if [ -f configs/40-libinput.conf ]; then
+        cp configs/40-libinput.conf /usr/share/X11/xorg.conf.d/40-libinput.conf
+    else
+        curl https://raw.githubusercontent.com/thehnm/tarbs/master/configs/40-libinput.conf > /usr/share/X11/xorg.conf.d/40-libinput.conf
+    fi
 }
 
 downloadandeditpackages() { \
-    curl https://raw.githubusercontent.com/thehnm/tarbs/master/packages.csv > /tmp/packages.csv
+    [ ! -f packages.csv ] && curl https://raw.githubusercontent.com/thehnm/tarbs/master/packages.csv > packages.csv
     dialog --yesno "Do you want to edit the packages file?" 10 80 3>&2 2>&1 1>&3
     case $? in
-        0 ) eval "$editor /tmp/packages.csv"
+        0 ) eval "$editor packages.csv"
             break;;
         1 ) break;;
     esac
@@ -168,9 +172,8 @@ gitmakeinstall() {
     dialog --title "Installation" --infobox "Installing \`$progname\` ($n of $total) via \`git\` and \`make\`. $2" 5 70
     putgitrepo "$1" "$dir"
     cd "$dir" || exit
-    make >/dev/null 2>&1
     make install >/dev/null 2>&1
-    cd /tmp || return ;
+    cd "$currentdir" || return ;
 }
 
 install() {
@@ -182,7 +185,7 @@ install() {
 
     [ "$laptop" = 1 ] && setup_libinput
 
-    total=$(wc -l < /tmp/packages.csv)
+    total=$(wc -l < packages.csv)
     aurinstalled=$(pacman -Qm | awk '{print $1}')
     while IFS=, read -r tag program comment; do
     n=$((n+1))
@@ -191,7 +194,7 @@ install() {
         "A") aurinstall "$program" "$comment" ;;
         "G") gitmakeinstall "$program" "$comment" ;;
     esac
-    done < /tmp/packages.csv ;
+    done < packages.csv ;
 }
 
 serviceinit() {
@@ -263,7 +266,7 @@ finish() { \
 
 ##########################################################################################################################
 
-mv install.sh /tmp/install.sh
+currentdir=$(pwd)
 
 # Check if user is root on Arch distro. Install dialog.
 initialcheck
