@@ -43,6 +43,7 @@
 ,cronie,"Daemon that runs specified programs at scheduled times and related tools"
 ,ranger,"Terminal file browser"
 ,ntp,"For time synchronization"
+,transmission-cli,"BitTorrent client"
 A,brave-bin,"Primary browser"
 A,mutt-wizard-git,"Automatic neomutt configurator"
 G,https://github.com/thehnm/dwm,"suckless window manager"
