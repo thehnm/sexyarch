@@ -21,6 +21,17 @@ succ() {
     printf "${GREEN}$1${NC}\n"
 }
 
+yesnodialog() {
+    while true; do
+        read -p "$1 (y|n) " yn
+        case $yn in
+            y ) eval $2; break;;
+            n ) eval $3; break;;
+            * ) err "Please answer yes (y) or no (n).";;
+        esac
+    done
+}
+
 ###############################################################################
 
 infobox() {
