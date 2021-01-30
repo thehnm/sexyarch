@@ -39,9 +39,9 @@ genlocale() {
     dialog --title "locale.gen" --yes-label "Edit locale.gen" --no-label "Keep going" --yesno "The following locale will be generated:\n\nen_US UTF-8" 10 50
     case $? in
         0 ) eval "$editor /etc/locale.gen"
-            break;;
+            ;;
         1 ) sed -i "s/\#en_US/en_US/" /etc/locale.gen
-            break;;
+            ;;
     esac
     locale-gen &> /dev/null
 }
@@ -65,9 +65,9 @@ islaptop() { \
     dialog --yesno "Do you install this config on a laptop?" 10 80 3>&2 2>&1 1>&3
     case $? in
         0 ) laptop=1
-            break;;
+            ;;
         1 ) laptop=0
-            break;;
+            ;;
     esac
 }
 
@@ -128,8 +128,7 @@ downloadandeditpackages() { \
     dialog --yesno "Do you want to edit the packages file?" 10 80 3>&2 2>&1 1>&3
     case $? in
         0 ) eval "$editor packages.csv"
-            break;;
-        1 ) break;;
+            ;;
     esac
 }
 
