@@ -138,7 +138,7 @@ installyay() { \
     pacman --noconfirm -S git &>/dev/null
     sudo -u $name git clone https://aur.archlinux.org/yay.git /tmp/yay &>/dev/null
     cd /tmp/yay
-    sudo -u $name makepkg --noconfirm -si &>/dev/null
+    sudo -u $name makepkg --noconfirm -si
 }
 
 pacmaninstall() { \
