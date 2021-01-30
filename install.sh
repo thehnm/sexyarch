@@ -56,7 +56,8 @@ infodialog() {
 }
 
 initialcheck() {
-    pacman -S --noconfirm --needed git || { err "You are not running this script as root."; exit 1; }
+    info2 "Initial check"
+    pacman -S --noconfirm --needed git &>/dev/null || { err "You are not running this script as root."; exit 1; }
 }
 
 preinstallmsg() {
@@ -96,14 +97,17 @@ sethostname() {
 }
 
 installfullsystem() {
+    info2 "Configure full system"
     yesnodialog "This script can also set the hostname, locale and timezone.\nDo you wish to configure these?" "settimezone;genlocale;sethostname"
 }
 
 islaptop() {
+    info2 "Laptop configuration"
     yesnodialog "Do you install this on a laptop?" "laptop=1" "laptop=0"
 }
 
 getuserandpass() {
+    info2 "Creating user"
     read -p "Please enter your username: " name
     namere="^[a-z_][a-z0-9_-]*$"
     while ! [[ "${name}" =~ ${namere} ]]; do
