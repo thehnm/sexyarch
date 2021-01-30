@@ -260,6 +260,12 @@ miscellaneous() {
     sudo -u "$name" mkdir -p /home/"$name"/.config/notmuch ## Required by mutt-wizard
     sudo -u "$name" mkdir -p /home/"$name"/.config/newsboat ## Stores newsboat config
     sudo -u "$name" mkdir -p /home/"$name"/.local/share/newsboat ## Stores the cache and history file
+
+    # Create XDG user directories
+    sudo -u "$name" mkdir -p /home/"$name"/dl # Download directory
+    sudo -u "$name" mkdir -p /home/"$name"/docs
+    sudo -u "$name" mkdir -p /home/"$name"/music
+    sudo -u "$name" mkdir -p /home/"$name"/pics
 }
 
 finish() { \
