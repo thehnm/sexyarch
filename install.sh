@@ -48,7 +48,7 @@ infodialog() {
 }
 
 initialcheck() {
-    pacman -S --noconfirm --needed git || { err "You are not running this script as root."; exit 1 }
+    pacman -S --noconfirm --needed git || { err "You are not running this script as root."; exit 1; }
 }
 
 preinstallmsg() {
