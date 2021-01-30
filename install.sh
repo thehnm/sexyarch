@@ -64,10 +64,10 @@ preinstallmsg() {
 }
 
 settimezone() {
+    info2 "Setting timezone"
     while true; do
         read -p "Please enter your continent: " continent
         read -p "Please enter an appropriate city from your timezone: " city
-        info2 "Setting timezone"
         ln -sf /usr/share/zoneinfo/"$continent"/"$city" /etc/localtime &>/dev/null
         [ ! -e /etc/localtime ] && err "Please enter correct values!" && continue
         hwclock --systohc
@@ -76,10 +76,10 @@ settimezone() {
 }
 
 genlocale() {
+    info2 "Generating locale"
     yesnodialog "The following locale will be set: en_US\nDo you want to keep this?\nOtherwise, edit /etc/locale.gen directly." "" "read -p 'Enter locale to use: ' locale"
     [ "$yn" = "y" ] && locale="en_US"
     sed -i "s/\#en_US/en_US/" /etc/locale.gen
-    info2 "Generating locale"
     locale-gen
     info2 "Setting locale"
     echo "LANG=$locale.UTF-8" > /etc/locale.conf
@@ -87,8 +87,8 @@ genlocale() {
 }
 
 sethostname() {
-    read -p "Please enter your hostname: " hostname
     info2 "Setting hostname"
+    read -p "Please enter your hostname: " hostname
     echo "$hostname" > /etc/hostname
     echo "127.0.0.1 localhost" > /etc/hosts
     echo "::1 localhost" >> /etc/hosts
