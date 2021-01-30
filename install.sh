@@ -11,6 +11,8 @@
 # Colors
 RED='\033[0;31m'
 GREEN='\033[0;32m'
+ORANGE='\033[0;33m'
+PURPLE='\033[0;35m'
 NC='\033[0m' # No Color
 
 err() {
@@ -19,6 +21,14 @@ err() {
 
 succ() {
     printf "${GREEN}$1${NC}\n"
+}
+
+info() {
+    printf "${PURPLE}$1${NC}\n"
+}
+
+warn() {
+    printf "${ORANGE}WARNING! $1${NC}\n"
 }
 
 yesnodialog() {
@@ -33,102 +43,83 @@ yesnodialog() {
 }
 
 infodialog() {
-    echo "$1\n"
+    printf "$1\n"
     yesnodialog "Do you want to continue?" "" "exit 1"
 }
 
-###############################################################################
-
-infobox() {
-    dialog --infobox "$1" "$2" "$3"
-    eval "$4" &>/dev/null
-}
-
 initialcheck() {
-    pacman -S --noconfirm --needed dialog git || { echo "Are you sure you're running this as the root user? Are you sure you're using an Arch-based distro? ;-) Are you sure you have an internet connection?"; exit; } ;}
-
-welcomemsg() { \
-    dialog --title "Welcome!" --msgbox "Welcome to thehnm's Arch Linux Installation Script!\\n\\nThis script will automatically install a fully-featured dwm Arch Linux desktop, which I use as my main machine.\\n\\n-thehnm" 10 60
+    pacman -S --noconfirm --needed git || { err "You are not running this script as root."; exit 1 }
 }
 
-preinstallmsg() { \
-    dialog --title "Start installing the script!" --yes-label "Let's go!" --no-label "No, nevermind!" --yesno "It will take some time, but when done, you can relax even more with your complete system.\\n\\nNow just press <Let's go!> and the system will begin installation!" 13 60 || { clear; exit; }
+preinstallmsg() {
+    infodialog "This script will install a ready-to-use Arch Linux system with my personal configuration."
 }
 
 settimezone() {
-    dialog --title "Timezone" --yes-label "Change timezone" --no-label "Keep going" --yesno "The following timezone will be used:\n\n$timezone" 10 50
-    [ "$?" = "0" ] && timezone=$(dialog --inputbox "Enter the timezone" 10 60 3>&1 1>&2 2>&3 3>&1)
-    ln -sf /usr/share/zoneinfo/"$timezone" /etc/localtime
-    while [[ "$?" = "1" ]]; do
-        timezone=$(dialog --inputbox "Wrong format <Continent/City>. Reenter the timezone" 10 60 3>&1 1>&2 2>&3 3>&1)
-        ln -sf /usr/share/zoneinfo/"$timezone" /etc/localtime
+    while true; do
+        read -p "Please enter your continent: " continent
+        read -p "Please enter an appropriate city from your timezone: " city
+        info "Setting timezone"
+        ln -sf /usr/share/zoneinfo/"$continent"/"$city" /etc/localtime &>/dev/null
+        [ ! -e /etc/localtime ] && err "Please enter correct values!" && continue
+        hwclock --systohc
+        break
     done
-    hwclock --systohc
 }
 
 genlocale() {
-    dialog --title "locale.gen" --yes-label "Edit locale.gen" --no-label "Keep going" --yesno "The following locale will be generated:\n\nen_US UTF-8" 10 50
-    case $? in
-        0 ) eval "$editor /etc/locale.gen"
-            ;;
-        1 ) sed -i "s/\#en_US/en_US/" /etc/locale.gen
-            ;;
-    esac
-    locale-gen &> /dev/null
-}
-
-genandeditlocaleconf() {
-    echo "$lang" > /etc/locale.conf
-    echo "$lcall" >> /etc/locale.conf
-    dialog --title "The following locale is set:" --yes-label "Edit defaults" --no-label "Don't edit" --yesno "$lang\n$lcall" 10 50
-    [ "$?" = "0" ] && eval "$editor /etc/locale.conf"
+    yesnodialog "The following locale will be set: en_US\nDo you want to keep this?\nOtherwise, edit /etc/locale.gen directly." "" "read -p 'Enter locale to use: ' locale"
+    [ "$yn" = "y" ] && locale="en_US"
+    sed -i "s/\#en_US/en_US/" /etc/locale.gen
+    info "Generating locale"
+    locale-gen
+    info "Setting locale"
+    echo "LANG=$locale.UTF-8" > /etc/locale.conf
+    echo "LC_ALL=$locale.UTF-8" > /etc/locale.conf
 }
 
 sethostname() {
-    hostname=$(dialog --inputbox "Enter your hostname" 10 60 3>&1 1>&2 2>&3 3>&1)
+    read -p "Please enter your hostname: " hostname
+    info "Setting hostname"
     echo "$hostname" > /etc/hostname
     echo "127.0.0.1 localhost" > /etc/hosts
     echo "::1 localhost" >> /etc/hosts
     echo "127.0.1.1 $hostname.localdomain $hostname" >> /etc/hosts
 }
 
-islaptop() { \
-    dialog --yesno "Do you install this config on a laptop?" 10 80 3>&2 2>&1 1>&3
-    case $? in
-        0 ) laptop=1
-            ;;
-        1 ) laptop=0
-            ;;
-    esac
+installfullsystem() {
+    yesnodialog "This script can also set the hostname, locale and timezone.\nDo you wish to configure these?" "settimezone;genlocale;sethostname"
+}
+
+islaptop() {
+    yesnodialog "Do you install this on a laptop?" "laptop=1" "laptop=0"
 }
 
 getuserandpass() {
-    # Prompts user for new username an password.
-    # Checks if username is valid and confirms passwd.
-    name=$(dialog --inputbox "First, please enter a name for the user account." 10 60 3>&1 1>&2 2>&3 3>&1) || exit
+    read -p "Please enter your username: " name
     namere="^[a-z_][a-z0-9_-]*$"
     while ! [[ "${name}" =~ ${namere} ]]; do
-            name=$(dialog --no-cancel --inputbox "Username not valid. Give a username beginning with a letter, with only lowercase letters, - or _." 10 60 3>&1 1>&2 2>&3 3>&1)
+        err "Username not valid. Please reenter your username"
+        read -p "Please enter your username: " name
     done
-    userdatadir=/home/"$name"/.local/share
-    pass1=$(dialog --no-cancel --insecure --passwordbox "Enter a password for that user." 10 60 3>&1 1>&2 2>&3 3>&1)
-    pass2=$(dialog --no-cancel --insecure --passwordbox "Retype password." 10 60 3>&1 1>&2 2>&3 3>&1)
-    while ! [[ ${pass1} == ${pass2} ]]; do
-            unset pass2
-            pass1=$(dialog --no-cancel --insecure --passwordbox "Passwords do not match.\\n\\nEnter password again." 10 60 3>&1 1>&2 2>&3 3>&1)
-            pass2=$(dialog --no-cancel --insecure --passwordbox "Retype password." 10 60 3>&1 1>&2 2>&3 3>&1)
-    done ;
-}
 
-usercheck() { \
-    ! (id -u $name &>/dev/null) ||
-    dialog --colors --title "WARNING!" --yes-label "CONTINUE" --no-label "No wait..." --yesno "The user \`$name\` already exists on this system. This script can install for a user already existing, but it will \\Zboverwrite\\Zn any conflicting settings/dotfiles on the user account.\\n\\nThis script will \\Zbnot\\Zn overwrite your user files, documents, videos, etc., so don't worry about that, but only click <CONTINUE> if you don't mind your settings being overwritten.\\n\\nNote also that this script will change $name's password to the one you just gave." 14 70
+    read -s -p "Enter password for $name: " pass1
+    read -s -p "Reenter password for $name: " pass2
+    while ! [[ ${pass1} == ${pass2} ]]; do
+        unset pass1 pass2
+        err "Passwords do not match. Please enter your password again"
+        read -s -p "Enter password for $name: " pass1
+        read -s -p "Reenter password for $name: " pass2
+    done
+}
+usercheck() {
+    ! (id -u $name &>/dev/null) || infodialog "$(warn "User \'$name\' already exits. The following steps will overwrite the user's password and settings")"
 }
 
 adduserandpass() { \
     # Adds user `$name` with password $pass1.
-    dialog --infobox "Adding user \"$name\"..." 4 50
-    useradd -m -g wheel -s /bin/bash "$name" &>/dev/null ||
+    info "Add user \'$name\'"
+    useradd -m -g wheel -s /bin/zsh "$name" &>/dev/null ||
     usermod -a -G wheel "$name" && mkdir -p /home/"$name" && chown "$name":wheel /home/"$name"
     usermod -a -G video "$name"
     repodir="/home/$name/.local/src"; mkdir -p "$repodir"; chown -R "$name":wheel $(dirname "$repodir")
@@ -136,59 +127,53 @@ adduserandpass() { \
     unset pass1 pass2 ;
 }
 
+newperms() { \
+    # Set special sudoers settings for install (or after).
+    info "Setting sudoers"
+    sed -i "/#SCRIPT/d" /etc/sudoers
+    echo -e "$@ #SCRIPT" >> /etc/sudoers
+}
+
+###############################################################################
+
+downloadandeditpackages() { \
+    cd "$1"
+    [ ! -f packages.csv ] && curl https://raw.githubusercontent.com/thehnm/tarbs/master/packages.csv > packages.csv
+    yesnodialog "Do you want to edit the list of packages to be installed?" "$editor packages.csv"
+}
+
 refreshkeys() { \
-    dialog --infobox "Refreshing Arch Keyring..." 4 40
+    info "Refreshing Arch Linux Keyring"
     pacman --noconfirm -Sy archlinux-keyring &>/dev/null
 }
 
-setup_libinput() { \
-    cd "$currentdir"
-    dialog --infobox "Configure libinput for laptops..." 8 50
-    singleinstall "libinput" "Input device management and event handling library"
-    ln -s /usr/share/X11/xorg.conf.d/40-libinput.conf /etc/X11/xorg.conf.d/40-libinput.conf
-    if [ -f configs/40-libinput.conf ]; then
-        cp configs/40-libinput.conf /usr/share/X11/xorg.conf.d/40-libinput.conf
-    else
-        curl https://raw.githubusercontent.com/thehnm/tarbs/master/configs/40-libinput.conf > /usr/share/X11/xorg.conf.d/40-libinput.conf
+installyay() { \
+    info "Installing yay"
+    if [ ! -f /usr/bin/yay ]; then
+        pacman --noconfirm -S git &>/dev/null
+        sudo -u $name git clone https://aur.archlinux.org/yay.git /tmp/yay &>/dev/null
+        cd /tmp/yay
+        sudo -u $name makepkg --noconfirm -si &>/dev/null
     fi
 }
 
-downloadandeditpackages() { \
-    cd "$currentdir"
-    [ ! -f packages.csv ] && curl https://raw.githubusercontent.com/thehnm/tarbs/master/packages.csv > packages.csv
-    dialog --yesno "Do you want to edit the packages file?" 10 80 3>&2 2>&1 1>&3
-    case $? in
-        0 ) eval "$editor packages.csv"
-            ;;
-    esac
-}
-
-installyay() { \
-    dialog --infobox "Installing yay, an AUR helper..." 8 50
-    [ -f /usr/bin/yay ] && return 0
-    pacman --noconfirm -S git &>/dev/null
-    sudo -u $name git clone https://aur.archlinux.org/yay.git /tmp/yay &>/dev/null
-    cd /tmp/yay
-    sudo -u $name makepkg --noconfirm -si
-}
-
 pacmaninstall() { \
-    dialog --title "Installation" --infobox "Installing \`$1\` ($n of $total). $2" 5 70
+    info "Install $1. $2"
     pacman --noconfirm --needed -S "$1" &>/dev/null
 }
 
-singleinstall() { \
-    dialog --title "Installation" --infobox "Installing \`$1\`. $2" 5 70
+looppacmaninstall() {
+    info "[$n/$total] $1 ($2)"
     pacman --noconfirm --needed -S "$1" &>/dev/null
 }
 
-aurinstall() { \
-    dialog --title "Installation" --infobox "Installing \`$1\` ($n of $total) from the AUR. $2" 5 70
+loopaurinstall() { \
+    info "[$n/$total] $1 ($2)"
     yes | sudo -u $name yay --noconfirm -S "$1" &>/dev/null
 }
 
 putgitrepo() { # Downloads a gitrepo $1 and places the files in $2 only overwriting conflicts
-    dialog --infobox "Downloading and installing config files..." 4 60
+    info "Downloading $1"
     [ -z "$3" ] && branch="master" || branch="$3"
     tempdir=$(mktemp -d)
     [ ! -d "$2" ] && mkdir -p "$2"
@@ -198,62 +183,60 @@ putgitrepo() { # Downloads a gitrepo $1 and places the files in $2 only overwrit
 }
 
 # Requires the git repository to have some kind of build file/Makefile
-gitmakeinstall() {
+loopgitinstall() {
     progname="$(basename "$1" .git)"
     dir="$repodir/$progname"
-    dialog --title "Installation" --infobox "Installing \`$progname\` ($n of $total) via \`git\` and \`make\`. $2" 5 70
+    info "[$n/$total] $1 ($2)"
     putgitrepo "$1" "$dir"
     cd "$dir" || exit
     make install >/dev/null 2>&1
     cd "$currentdir" || return ;
 }
 
+setup_libinput() { \
+    info "Configure libinput for laptops"
+    pacmaninstall "libinput" "Input device management and event handling library"
+    ln -s /usr/share/X11/xorg.conf.d/40-libinput.conf /etc/X11/xorg.conf.d/40-libinput.conf
+    if [ -f configs/40-libinput.conf ]; then
+        cp configs/40-libinput.conf /usr/share/X11/xorg.conf.d/40-libinput.conf
+    else
+        curl https://raw.githubusercontent.com/thehnm/tarbs/master/configs/40-libinput.conf > /usr/share/X11/xorg.conf.d/40-libinput.conf
+    fi
+}
+
 install() {
-    cd "$currentdir"
-    singleinstall "xorg-server" "Xorg X Server"
-    singleinstall "xorg-xinit" "X.Org initialisation program"
-    singleinstall "xorg-xsetroot" "Utility for setting root window to pattern or color"
-    singleinstall "xorg-xrandr" "Interface for RandR interface"
-    singleinstall "libxinerama" "X11 Xinerama extension library"
+    cd "$1"
+    pacmaninstall "xorg-server" "Xorg X Server"
+    pacmaninstall "xorg-xinit" "X.Org initialisation program"
+    pacmaninstall "xorg-xsetroot" "Utility for setting root window to pattern or color"
+    pacmaninstall "xorg-xrandr" "Interface for RandR interface"
+    pacmaninstall "libxinerama" "X11 Xinerama extension library"
 
     [ "$laptop" = 1 ] && setup_libinput
 
     total=$(wc -l < packages.csv)
-    aurinstalled=$(pacman -Qm | awk '{print $1}')
+    #aurinstalled=$(pacman -Qm | awk '{print $1}')
     while IFS=, read -r tag program comment; do
-    n=$((n+1))
-    case "$tag" in
-        "") pacmaninstall "$program" "$comment" ;;
-        "A") aurinstall "$program" "$comment" ;;
-        "G") gitmakeinstall "$program" "$comment" ;;
-    esac
+        n=$((n+1))
+        case "$tag" in
+            "") looppacmaninstall "$program" "$comment" ;;
+            "A") loopaurinstall "$program" "$comment" ;;
+            "G") loopgitinstall "$program" "$comment" ;;
+        esac
     done < packages.csv ;
 }
 
 serviceinit() {
     for service in "$@"; do
-        dialog --infobox "Enabling \"$service\"..." 4 40
-        systemctl enable "$service"
-        systemctl start "$service"
+        info "Enabling \"$service\""
+        systemctl enable "$service" &>/dev/null
+        systemctl start "$service" &>/dev/null
     done
 }
 
-newperms() { \
-    # Set special sudoers settings for install (or after).
-    dialog --infobox "Setting sudoers settings..." 10 50
-    sed -i "/#SCRIPT/d" /etc/sudoers
-    echo -e "$@ #SCRIPT" >> /etc/sudoers
-}
-
-setshell() {
-    dialog --infobox "Set shell..." 10 50
-    ln -sf /usr/bin/dash /bin/sh
-
-    dialog --infobox "Set interactive shell..." 10 50
-    chsh -s /usr/bin/zsh
-    chsh -s /usr/bin/zsh $name
-
-    infobox "Install antibody zsh plugin manager" "4" "80" "sudo -u $name curl -sfL git.io/antibody | sh -s - -b /home/$name/.local/bin/"
+installantibody() {
+    info "Install antibody zsh plugin manager"
+    sudo -u $name curl -sfL git.io/antibody | sh -s - -b /home/$name/.local/bin/ &>/dev/null
 }
 
 installdotfiles() {
@@ -261,19 +244,22 @@ installdotfiles() {
     cd /home/"$name" && sudo -u "$name" git config --local status.showUntrackedFiles no && sudo -u "$name" git update-index --assume-unchanged README.md && rm README.md
 }
 
-systembeepoff() { \
-    dialog --infobox "Getting rid of that retarded error beep sound..." 10 50
+systembeepoff() {
+    info "Disabling beep sound"
     rmmod pcspkr
     echo "blacklist pcspkr" > /etc/modprobe.d/nobeep.conf
 }
 
 resetpulse() { \
-    dialog --infobox "Reseting Pulseaudio..." 4 50
+    info "Resetting Pulseaudio"
     killall pulseaudio
     sudo -n "$name" pulseaudio --start
 }
 
 miscellaneous() {
+    info "Setting miscellaneous stuff"
+
+    ln -sf /usr/bin/dash /bin/sh
 
     systembeepoff
 
@@ -299,57 +285,40 @@ miscellaneous() {
     sudo -u "$name" mkdir -p /home/"$name"/pics
 }
 
-finish() { \
-    dialog --title "Welcome" --msgbox "The installation is done! You can reboot your system now." 10 80
-}
-
-##########################################################################################################################
+###############################################################################
 
 currentdir=$(pwd)
 
-# Check if user is root on Arch distro. Install dialog.
 initialcheck
 
-# Welcome user.
-welcomemsg
+installfullsystem
 
-settimezone
-
-genlocale
-
-genandeditlocaleconf
-
-sethostname
-
-# Get and verify username and password.
 getuserandpass
 
-# Give warning if user already exists.
-usercheck || { clear; exit; }
+usercheck
 
-# Last chance for user to back out before install.
-preinstallmsg || { clear; exit; }
+preinstallmsg
+
+adduserandpass
 
 newperms "%wheel ALL=(ALL) ALL\\n%wheel ALL=(ALL) NOPASSWD: /usr/bin/shutdown,/usr/bin/reboot,/usr/bin/systemctl suspend,/usr/bin/wifi-menu,/usr/bin/mount,/usr/bin/umount,/usr/bin/pacman -Syu,/usr/bin/pacman -Syyu,/usr/bin/packer -Syu,/usr/bin/packer -Syyu,/usr/bin/systemctl restart NetworkManager,/usr/bin/rc-service NetworkManager restart,/usr/bin/pacman -Syyu --noconfirm,/usr/bin/loadkeys,/usr/bin/yay"
 
 islaptop
 
-adduserandpass
-
-downloadandeditpackages
+downloadandeditpackages "$currentdir"
 
 refreshkeys
 
-installyay || exit 1
+installyay || { err "yay has to be installed to continue"; exit; }
 
-install
-
-setshell
+install "$currentdir"
 
 installdotfiles
+
+installantibody
 
 serviceinit NetworkManager cronie ntpdate ssh
 
 miscellaneous
 
-finish && clear
+succ "Installation is done. You can reboot now"
