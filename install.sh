@@ -41,7 +41,7 @@ warn() {
 
 yesnodialog() {
     while true; do
-        read -p "$1 (y|n) " yn
+        read -p "$(info3 "$1 (y|n)") " yn
         case $yn in
             y ) eval $2; break;;
             n ) eval $3; break;;
