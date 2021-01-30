@@ -303,7 +303,7 @@ downloadandeditpackages
 
 refreshkeys
 
-installyay
+installyay || exit 1
 
 install
 
