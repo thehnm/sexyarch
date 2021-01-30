@@ -32,6 +32,11 @@ yesnodialog() {
     done
 }
 
+infodialog() {
+    echo "$1\n"
+    yesnodialog "Do you want to continue?" "" "exit 1"
+}
+
 ###############################################################################
 
 infobox() {
