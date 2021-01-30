@@ -23,8 +23,16 @@ succ() {
     printf "${GREEN}$1${NC}\n"
 }
 
-info() {
+info1() {
     printf "${PURPLE}$1${NC}\n"
+}
+
+info2() {
+    printf "> $1\n"
+}
+
+info3() {
+    printf "$1\n"
 }
 
 warn() {
@@ -59,7 +67,7 @@ settimezone() {
     while true; do
         read -p "Please enter your continent: " continent
         read -p "Please enter an appropriate city from your timezone: " city
-        info "Setting timezone"
+        info2 "Setting timezone"
         ln -sf /usr/share/zoneinfo/"$continent"/"$city" /etc/localtime &>/dev/null
         [ ! -e /etc/localtime ] && err "Please enter correct values!" && continue
         hwclock --systohc
@@ -71,16 +79,16 @@ genlocale() {
     yesnodialog "The following locale will be set: en_US\nDo you want to keep this?\nOtherwise, edit /etc/locale.gen directly." "" "read -p 'Enter locale to use: ' locale"
     [ "$yn" = "y" ] && locale="en_US"
     sed -i "s/\#en_US/en_US/" /etc/locale.gen
-    info "Generating locale"
+    info2 "Generating locale"
     locale-gen
-    info "Setting locale"
+    info2 "Setting locale"
     echo "LANG=$locale.UTF-8" > /etc/locale.conf
     echo "LC_ALL=$locale.UTF-8" > /etc/locale.conf
 }
 
 sethostname() {
     read -p "Please enter your hostname: " hostname
-    info "Setting hostname"
+    info2 "Setting hostname"
     echo "$hostname" > /etc/hostname
     echo "127.0.0.1 localhost" > /etc/hosts
     echo "::1 localhost" >> /etc/hosts
@@ -123,7 +131,7 @@ usercheck() {
 
 adduserandpass() { \
     # Adds user `$name` with password $pass1.
-    info "Add user \'$name\'"
+    info2 "Add user \'$name\'"
     useradd -m -g wheel -s /bin/zsh "$name" &>/dev/null ||
     usermod -a -G wheel "$name" && mkdir -p /home/"$name" && chown "$name":wheel /home/"$name"
     usermod -a -G video "$name"
@@ -134,7 +142,7 @@ adduserandpass() { \
 
 newperms() { \
     # Set special sudoers settings for install (or after).
-    info "Setting sudoers"
+    info2 "Setting sudoers"
     sed -i "/#SCRIPT/d" /etc/sudoers
     echo -e "$@ #SCRIPT" >> /etc/sudoers
 }
@@ -148,12 +156,12 @@ downloadandeditpackages() { \
 }
 
 refreshkeys() { \
-    info "Refreshing Arch Linux Keyring"
+    info2 "Refreshing Arch Linux Keyring"
     pacman --noconfirm -Sy archlinux-keyring &>/dev/null
 }
 
 installyay() { \
-    info "Installing yay"
+    info2 "Installing yay"
     if [ ! -f /usr/bin/yay ]; then
         pacman --noconfirm -S git &>/dev/null
         sudo -u $name git clone https://aur.archlinux.org/yay.git /tmp/yay &>/dev/null
@@ -163,22 +171,22 @@ installyay() { \
 }
 
 pacmaninstall() { \
-    info "Install $1. $2"
+    info2 "Install $1. $2"
     pacman --noconfirm --needed -S "$1" &>/dev/null
 }
 
 looppacmaninstall() {
-    info "[$n/$total] $1 ($2)"
+    info2 "[$n/$total] $1 ($2)"
     pacman --noconfirm --needed -S "$1" &>/dev/null
 }
 
 loopaurinstall() { \
-    info "[$n/$total] $1 ($2)"
+    info2 "[$n/$total] $1 ($2)"
     yes | sudo -u $name yay --noconfirm -S "$1" &>/dev/null
 }
 
 putgitrepo() { # Downloads a gitrepo $1 and places the files in $2 only overwriting conflicts
-    info "Downloading $1"
+    info3 "Downloading $1"
     [ -z "$3" ] && branch="master" || branch="$3"
     tempdir=$(mktemp -d)
     [ ! -d "$2" ] && mkdir -p "$2"
@@ -191,7 +199,7 @@ putgitrepo() { # Downloads a gitrepo $1 and places the files in $2 only overwrit
 loopgitinstall() {
     progname="$(basename "$1" .git)"
     dir="$repodir/$progname"
-    info "[$n/$total] $1 ($2)"
+    info2 "[$n/$total] $1 ($2)"
     putgitrepo "$1" "$dir"
     cd "$dir" || exit
     make install >/dev/null 2>&1
@@ -199,7 +207,7 @@ loopgitinstall() {
 }
 
 setup_libinput() { \
-    info "Configure libinput for laptops"
+    info2 "Configure libinput for laptops"
     pacmaninstall "libinput" "Input device management and event handling library"
     ln -s /usr/share/X11/xorg.conf.d/40-libinput.conf /etc/X11/xorg.conf.d/40-libinput.conf
     if [ -f configs/40-libinput.conf ]; then
@@ -233,14 +241,14 @@ install() {
 
 serviceinit() {
     for service in "$@"; do
-        info "Enabling \"$service\""
+        info2 "Enabling \"$service\""
         systemctl enable "$service" &>/dev/null
         systemctl start "$service" &>/dev/null
     done
 }
 
 installantibody() {
-    info "Install antibody zsh plugin manager"
+    info2 "Install antibody zsh plugin manager"
     sudo -u $name curl -sfL git.io/antibody | sh -s - -b /home/$name/.local/bin/ &>/dev/null
 }
 
@@ -250,19 +258,19 @@ installdotfiles() {
 }
 
 systembeepoff() {
-    info "Disabling beep sound"
+    info2 "Disabling beep sound"
     rmmod pcspkr
     echo "blacklist pcspkr" > /etc/modprobe.d/nobeep.conf
 }
 
 resetpulse() { \
-    info "Resetting Pulseaudio"
+    info2 "Resetting Pulseaudio"
     killall pulseaudio &>/dev/null
     sudo -u "$name" pulseaudio --start
 }
 
 miscellaneous() {
-    info "Setting miscellaneous stuff"
+    info2 "Setting miscellaneous stuff"
 
     ln -sf /usr/bin/dash /bin/sh
 
