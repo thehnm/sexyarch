@@ -83,7 +83,7 @@ genlocale() {
     locale-gen
     info2 "Setting locale"
     echo "LANG=$locale.UTF-8" > /etc/locale.conf
-    echo "LC_ALL=$locale.UTF-8" > /etc/locale.conf
+    echo "LC_ALL=$locale.UTF-8" >> /etc/locale.conf
 }
 
 sethostname() {
