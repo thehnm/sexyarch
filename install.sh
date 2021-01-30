@@ -258,7 +258,7 @@ systembeepoff() {
 resetpulse() { \
     info "Resetting Pulseaudio"
     killall pulseaudio
-    sudo -n "$name" pulseaudio --start
+    sudo -u "$name" pulseaudio --start
 }
 
 miscellaneous() {
