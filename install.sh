@@ -106,7 +106,7 @@ sethostname() {
 }
 
 installfullsystem() {
-    yesnodialog "In addition to user configuration, this script can also handle setting the hostname, timezone and locale for a fully featured system.\nDo you want configure these settings?" "queue settimezone genlocale"
+    yesnodialog "In addition to user configuration, this script can also handle setting the hostname, timezone and locale for a fully featured system.\nDo you want configure these settings?" "queue sethostname settimezone genlocale"
 }
 
 islaptop() {
@@ -326,7 +326,6 @@ currentdir=$(pwd)
 clear
 
 queue "initialcheck" \
-      "sethostname" \
       "installfullsystem" \
       "getuserandpass" \
       "usercheck" \
