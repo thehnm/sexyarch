@@ -98,7 +98,7 @@ sethostname() {
 
 installfullsystem() {
     info2 "Configure full system"
-    yesnodialog "This script can also set the hostname, locale and timezone.\nDo you wish to configure these?" "settimezone;genlocale;sethostname"
+    yesnodialog "This script will set these settings:\n- Timezone = Europe/Berlin\n- Locale = en_US\nDo you wish to configure these?" "settimezone;genlocale"
 }
 
 islaptop() {
@@ -307,6 +307,8 @@ miscellaneous() {
 currentdir=$(pwd)
 
 initialcheck
+
+sethostname
 
 installfullsystem
 
