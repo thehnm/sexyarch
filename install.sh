@@ -195,17 +195,17 @@ installyay() { \
 }
 
 pacmaninstall() { \
-    info2 "Install $1. $2"
+    info2 "Install $1. \"$2\""
     [ $debug = 0 ] && pacman --noconfirm --needed -S "$1" &>/dev/null
 }
 
 looppacmaninstall() {
-    info2 "[$n/$total] $1 ($2)"
+    info2 "[$n/$total] $1. $2"
     [ $debug = 0 ] && pacman --noconfirm --needed -S "$1" &>/dev/null
 }
 
 loopaurinstall() { \
-    info2 "[$n/$total] $1 ($2)"
+    info2 "[$n/$total] $1. $2"
     [ $debug = 0 ] && yes | sudo -u $name yay --noconfirm -S "$1" &>/dev/null
 }
 
@@ -225,7 +225,7 @@ putgitrepo() { # Downloads a gitrepo $1 and places the files in $2 only overwrit
 loopgitinstall() {
     progname="$(basename "$1" .git)"
     dir="$repodir/$progname"
-    info2 "[$n/$total] $1 ($2)"
+    info2 "[$n/$total] $1. $2"
     if [ $debug = 0 ]; then
         putgitrepo "$1" "$dir"
         cd "$dir" || exit
