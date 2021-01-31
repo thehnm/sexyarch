@@ -106,7 +106,7 @@ sethostname() {
 }
 
 installfullsystem() {
-    yesnodialog "This script will set these settings:\n- Timezone = Europe/Berlin\n- Locale = en_US\nDo you wish to configure these?" "queue settimezone genlocale"
+    yesnodialog "In addition to user configuration, this script can also handle setting the hostname, timezone and locale for a fully featured system.\nDo you want configure these settings?" "queue settimezone genlocale"
 }
 
 islaptop() {
