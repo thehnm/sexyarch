@@ -74,19 +74,19 @@ preinstallmsg() {
 }
 
 settimezone() {
-    while true; do
-        read -p "Please enter your continent: " continent
-        read -p "Please enter an appropriate city from your timezone: " city
-        info2 "Setting timezone"
-        ln -sf /usr/share/zoneinfo/"$continent"/"$city" /etc/localtime &>/dev/null
-        [ ! -e /etc/localtime ] && err "Please enter correct values!" && continue
-        hwclock --systohc
-        break
+    yesnodialog "The following timezone will be used: Europe/Berlin\nDo you want to keep this?" "" "read -p 'Please enter your timezone: ' timezone"
+    info2 "Setting timezone"
+    [ "$yn" = "y" ] && timezone="Europe/Berlin"
+    while [ ! -e /usr/share/zoneinfo/"$timezone" ]; do
+        err "Please enter a valid timezone!"
+        read -p "Please reenter your continent: " timezone
     done
+    ln -sf /usr/share/zoneinfo/"$timezone" /etc/localtime &>/dev/null
+    hwclock --systohc
 }
 
 genlocale() {
-    yesnodialog "The following locale will be set: en_US\nDo you want to keep this?\nOtherwise, edit /etc/locale.gen directly." "" "read -p 'Enter locale to use: ' locale"
+    yesnodialog "The following locale will be set: en_US\nDo you want to keep this?" "" "read -p 'Enter locale to use: ' locale"
     info2 "Generating locale"
     [ "$yn" = "y" ] && locale="en_US"
     sed -i "s/\#en_US/en_US/" /etc/locale.gen
