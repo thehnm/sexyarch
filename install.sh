@@ -143,8 +143,7 @@ getuserandpass() {
 }
 
 usercheck() {
-    #! (id -u $name &>/dev/null) || { infodialog "$(warn "User \'$name\' already exits. The following steps will overwrite the user's password and settings")" }
-    warn "User \'$name\' already exits. The following steps will overwrite the user's password and settings"
+    ! (id -u $name &>/dev/null) && preinstallmsg || warn "User \'$name\' already exits. The following steps will overwrite the user's password and settings"
 }
 
 adduserandpass() { \
@@ -359,7 +358,6 @@ queue "initialcheck" \
       "installfullsystem" \
       "getuserandpass" \
       "usercheck" \
-      "preinstallmsg" \
       "adduserandpass" \
       "newperms \"%wheel ALL=(ALL) ALL\\n%wheel ALL=(ALL) NOPASSWD: /usr/bin/shutdown,/usr/bin/reboot,/usr/bin/systemctl suspend,/usr/bin/wifi-menu,/usr/bin/mount,/usr/bin/umount,/usr/bin/pacman -Syu,/usr/bin/pacman -Syyu,/usr/bin/packer -Syu,/usr/bin/packer -Syyu,/usr/bin/systemctl restart NetworkManager,/usr/bin/rc-service NetworkManager restart,/usr/bin/pacman -Syyu --noconfirm,/usr/bin/loadkeys,/usr/bin/yay\"" \
       "islaptop" \
