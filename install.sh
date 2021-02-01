@@ -69,6 +69,10 @@ preinstallmsg() {
 
 chooseeditor() {
     yesnodialog "The default editor is \'vim\'. Make sure it is installed.\nOtherwise, enter the editor of your choice.\nDo you want to use \'vim\'?" "" "read -p 'Please enter your editor: ' editor"
+    while [ -z "$(builtin type -p $editor)" ]; do
+        err "Editor not found! Make sure your editor is installed or accessible from your PATH.\nOr choose another editor."
+        read -p 'Reenter your editor: ' editor
+    done
 }
 
 settimezone() {
