@@ -101,7 +101,7 @@ sethostname() {
 }
 
 installfullsystem() {
-    yesnodialog "In addition to user configuration, this script can also handle setting the hostname, timezone and locale for a fully featured system.\nDo you want configure these settings?" "queue sethostname settimezone genlocale"
+    yesnodialog "In addition to user configuration, this script can also handle setting the hostname,\ntimezone and locale for a fully featured system.\nDo you want configure these settings?" "queue sethostname settimezone genlocale"
 }
 
 islaptop() {
@@ -132,7 +132,7 @@ getuserandpass() {
 }
 
 usercheck() {
-    ! (id -u $name &>/dev/null) && preinstallmsg || warn "User \'$name\' already exits. The following steps will overwrite the user's password and settings"
+    ! (id -u $name &>/dev/null) && preinstallmsg || warn "User \'$name\' already exits.\nThe following steps will overwrite the user's password and settings"
 }
 
 adduserandpass() { \
