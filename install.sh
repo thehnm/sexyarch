@@ -126,8 +126,8 @@ getuserandpass() {
     read -p "Please enter your username: " name
     namere="^[a-z_][a-z0-9_-]*$"
     while ! [[ "${name}" =~ ${namere} ]]; do
-        err "Username not valid. Please reenter your username"
-        read -p "Please enter your username: " name
+        err "Username not valid."
+        read -p "Please enter your username again: " name
     done
 
     read -s -p "Enter password for $name: " pass1
