@@ -76,7 +76,7 @@ settimezone() {
     info "Setting timezone"
     while [ ! -e /usr/share/zoneinfo/"$timezone" ]; do
         err "Please enter a valid timezone!"
-        read -p "Please reenter your continent: " timezone
+        read -p "Reenter your timezone: " timezone
     done
     ln -sf /usr/share/zoneinfo/"$timezone" /etc/localtime &>/dev/null
     hwclock --systohc
