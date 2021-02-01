@@ -1,8 +1,7 @@
 #!/bin/bash
 
 [ -z ${dotfilesrepo+x} ] && dotfilesrepo="https://github.com/thehnm/dotfiles.git"
-[ -z ${lang+x} ] && lang="LANG=en_US.UTF-8"
-[ -z ${lcall+x} ] && lcall="LC_ALL=en_US.UTF-8"
+[ -z ${locale+x} ] && locale="en_US"
 [ -z ${editor+x} ] && editor="vim"
 [ -z ${timezone+x} ] && timezone="Europe/Berlin"
 
@@ -71,7 +70,6 @@ preinstallmsg() {
 settimezone() {
     yesnodialog "The following timezone will be used: Europe/Berlin\nDo you want to keep this?" "" "read -p 'Please enter your timezone: ' timezone"
     info "Setting timezone"
-    [ "$yn" = "y" ] && timezone="Europe/Berlin"
     while [ ! -e /usr/share/zoneinfo/"$timezone" ]; do
         err "Please enter a valid timezone!"
         read -p "Please reenter your continent: " timezone
@@ -83,7 +81,6 @@ settimezone() {
 genlocale() {
     yesnodialog "The following locale will be set: en_US\nDo you want to keep this?" "" "read -p 'Enter locale to use: ' locale"
     info "Generating locale"
-    [ "$yn" = "y" ] && locale="en_US"
     sed -i "s/\#en_US/en_US/" /etc/locale.gen
     locale-gen
     info "Setting locale"
