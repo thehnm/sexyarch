@@ -24,16 +24,8 @@ succ() {
     printf "${GREEN}$1${NC}\n"
 }
 
-info1() {
-    printf "${CYAN}$1${NC}\n"
-}
-
-info2() {
+info() {
     printf "> $1\n"
-}
-
-info3() {
-    printf "$1\n"
 }
 
 warn() {
@@ -43,7 +35,7 @@ warn() {
 
 yesnodialog() {
     while true; do
-        read -p "$(info3 "$1 (y|n)") " yn
+        read -p "$(printf "$1 (y|n) ")" yn
         case $yn in
             y ) eval $2; break;;
             n ) eval $3; break;;
@@ -65,7 +57,7 @@ done
 }
 
 initialcheck() {
-    info2 "Initial check"
+    info "Initial check"
     pacman -S --noconfirm --needed git &>/dev/null || { err "You are not running this script as root."; exit 1; }
 }
 
@@ -75,7 +67,7 @@ preinstallmsg() {
 
 settimezone() {
     yesnodialog "The following timezone will be used: Europe/Berlin\nDo you want to keep this?" "" "read -p 'Please enter your timezone: ' timezone"
-    info2 "Setting timezone"
+    info "Setting timezone"
     [ "$yn" = "y" ] && timezone="Europe/Berlin"
     while [ ! -e /usr/share/zoneinfo/"$timezone" ]; do
         err "Please enter a valid timezone!"
@@ -87,18 +79,18 @@ settimezone() {
 
 genlocale() {
     yesnodialog "The following locale will be set: en_US\nDo you want to keep this?" "" "read -p 'Enter locale to use: ' locale"
-    info2 "Generating locale"
+    info "Generating locale"
     [ "$yn" = "y" ] && locale="en_US"
     sed -i "s/\#en_US/en_US/" /etc/locale.gen
     locale-gen
-    info2 "Setting locale"
+    info "Setting locale"
     echo "LANG=$locale.UTF-8" > /etc/locale.conf
     echo "LC_ALL=$locale.UTF-8" >> /etc/locale.conf
 }
 
 sethostname() {
     read -p "Please enter your hostname: " hostname
-    info2 "Setting hostname"
+    info "Setting hostname"
     echo "$hostname" > /etc/hostname
     echo "127.0.0.1 localhost" > /etc/hosts
     echo "::1 localhost" >> /etc/hosts
@@ -142,7 +134,7 @@ usercheck() {
 
 adduserandpass() { \
     # Adds user `$name` with password $pass1.
-    info2 "Add user \'$name\'"
+    info "Add user \'$name\'"
     useradd -m -g wheel -s /bin/zsh "$name" &>/dev/null ||
     usermod -a -G wheel "$name" && mkdir -p /home/"$name" && chown "$name":wheel /home/"$name"
     usermod -a -G video "$name"
@@ -153,7 +145,7 @@ adduserandpass() { \
 
 newperms() { \
     # Set special sudoers settings for install (or after).
-    info2 "Setting sudoers"
+    info "Setting sudoers"
     sed -i "/#SCRIPT/d" /etc/sudoers
     echo -e "$@ #SCRIPT" >> /etc/sudoers
 }
@@ -167,12 +159,12 @@ downloadandeditpackages() { \
 }
 
 refreshkeys() { \
-    info2 "Refreshing Arch Linux Keyring"
+    info "Refreshing Arch Linux Keyring"
     pacman --noconfirm -Sy archlinux-keyring &>/dev/null
 }
 
 installyay() { \
-    info2 "Installing yay"
+    info "Installing yay"
     if [ ! -f /usr/bin/yay ]; then
         pacman --noconfirm -S git &>/dev/null
         sudo -u $name git clone https://aur.archlinux.org/yay.git /tmp/yay &>/dev/null
@@ -182,17 +174,17 @@ installyay() { \
 }
 
 pacmaninstall() { \
-    info2 "Install $1. \"$2\""
+    info "Install $1. \"$2\""
     pacman --noconfirm --needed -S "$1" &>/dev/null
 }
 
 looppacmaninstall() {
-    info2 "[$n/$total] $1. $2"
+    info "[$n/$total] $1. $2"
     pacman --noconfirm --needed -S "$1" &>/dev/null
 }
 
 loopaurinstall() { \
-    info2 "[$n/$total] $1. $2"
+    info "[$n/$total] $1. $2"
     yes | sudo -u $name yay --noconfirm -S "$1" &>/dev/null
 }
 
@@ -209,7 +201,7 @@ putgitrepo() { # Downloads a gitrepo $1 and places the files in $2 only overwrit
 loopgitinstall() {
     progname="$(basename "$1" .git)"
     dir="$repodir/$progname"
-    info2 "[$n/$total] $1. $2"
+    info "[$n/$total] $1. $2"
     putgitrepo "$1" "$dir"
     cd "$dir" || exit
     make install >/dev/null 2>&1
@@ -218,7 +210,7 @@ loopgitinstall() {
 
 setup_libinput() { \
     pacmaninstall "libinput" "Input device management and event handling library"
-    info2 "Configure libinput for laptops"
+    info "Configure libinput for laptops"
     ln -s /usr/share/X11/xorg.conf.d/40-libinput.conf /etc/X11/xorg.conf.d/40-libinput.conf
     if [ -f configs/40-libinput.conf ]; then
         cp configs/40-libinput.conf /usr/share/X11/xorg.conf.d/40-libinput.conf
@@ -252,37 +244,37 @@ install() {
 
 serviceinit() {
     for service in "$@"; do
-        info2 "Enabling \"$service\""
+        info "Enabling \"$service\""
         systemctl enable "$service" &>/dev/null
         systemctl start "$service" &>/dev/null
     done
 }
 
 installantibody() {
-    info2 "Install antibody zsh plugin manager"
+    info "Install antibody zsh plugin manager"
     sudo -u $name curl -sfL git.io/antibody | sh -s - -b /home/$name/.local/bin/ &>/dev/null
 }
 
 installdotfiles() {
-    info2 "Installing dotfiles"
+    info "Installing dotfiles"
     putgitrepo "$dotfilesrepo" "/home/$name"
     cd /home/"$name" && sudo -u "$name" git config --local status.showUntrackedFiles no
 }
 
 systembeepoff() {
-    info2 "Disabling beep sound"
+    info "Disabling beep sound"
     rmmod pcspkr
     echo "blacklist pcspkr" > /etc/modprobe.d/nobeep.conf
 }
 
 resetpulse() { \
-    info2 "Resetting Pulseaudio"
+    info "Resetting Pulseaudio"
     killall pulseaudio &>/dev/null
     sudo -u "$name" pulseaudio --start
 }
 
 miscellaneous() {
-    info2 "Setting miscellaneous stuff"
+    info "Setting miscellaneous stuff"
 
     ln -sf /usr/bin/dash /bin/sh
 
