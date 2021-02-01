@@ -67,6 +67,10 @@ preinstallmsg() {
     infodialog "This script will install a ready-to-use Arch Linux system with my personal configuration."
 }
 
+chooseeditor() {
+    yesnodialog "The default editor is \'vim\'. Make sure it is installed.\nOtherwise, enter the editor of your choice.\nDo you want to use \'vim\'?" "" "read -p 'Please enter your editor: ' editor"
+}
+
 settimezone() {
     yesnodialog "The following timezone will be used: Europe/Berlin\nDo you want to keep this?" "" "read -p 'Please enter your timezone: ' timezone"
     info "Setting timezone"
@@ -318,6 +322,7 @@ currentdir=$(pwd)
 clear
 
 queue "initialcheck" \
+      "chooseeditor" \
       "installfullsystem" \
       "getuserandpass" \
       "usercheck" \
