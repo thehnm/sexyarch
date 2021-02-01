@@ -52,6 +52,9 @@ infodialog() {
 queue() {
 for command in "$@"; do
     printf "\n"
+    printf "=%.0s" {1..80}
+    printf "\n"
+    printf "\n"
     eval "$command"
 done
 }
