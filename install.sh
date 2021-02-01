@@ -105,7 +105,7 @@ sethostname() {
     hostre="^[a-z0-9][a-z0-9.-_]*$"
     while ! [[ "${hostname}" =~ ${hostre} ]]; do
         err "Hostname not valid."
-        read -p "Reenter your hostname: " hostname
+        read -p "Please enter your hostname again: " hostname
     done
     info "Setting hostname"
     echo "$hostname" > /etc/hostname
