@@ -102,6 +102,11 @@ genlocale() {
 
 sethostname() {
     read -p "Please enter your hostname: " hostname
+    hostre="^[a-z0-9][a-z0-9.-_]*$"
+    while ! [[ "${hostname}" =~ ${hostre} ]]; do
+        err "Hostname not valid."
+        read -p "Reenter your hostname: " hostname
+    done
     info "Setting hostname"
     echo "$hostname" > /etc/hostname
     echo "127.0.0.1 localhost" > /etc/hosts
