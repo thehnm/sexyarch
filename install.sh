@@ -77,11 +77,11 @@ chooseeditor() {
 
 settimezone() {
     yesnodialog "The following timezone will be used: Europe/Berlin\nDo you want to keep this?" "" "read -p 'Please enter your timezone: ' timezone"
-    info "Setting timezone"
     while [ ! -e /usr/share/zoneinfo/"$timezone" ]; do
         err "Please enter a valid timezone!"
         read -p "Reenter your timezone: " timezone
     done
+    info "Setting timezone"
     ln -sf /usr/share/zoneinfo/"$timezone" /etc/localtime &>/dev/null
     hwclock --systohc
 }
