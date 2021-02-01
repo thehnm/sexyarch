@@ -93,7 +93,7 @@ genlocale() {
         read -p "Reenter your locale: " locale
     done
     info "Generating locale"
-    sed -i "s/\#en_US/en_US/" /etc/locale.gen
+    sed -i "s/\#$locale/$locale/" /etc/locale.gen
     locale-gen
     info "Setting locale"
     echo "LANG=$locale.UTF-8" > /etc/locale.conf
