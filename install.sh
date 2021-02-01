@@ -84,6 +84,10 @@ settimezone() {
 
 genlocale() {
     yesnodialog "The following locale will be set: en_US\nDo you want to keep this?" "" "read -p 'Enter locale to use: ' locale"
+    while [ -z "$(grep $locale /etc/locale.gen)" ]; do
+        err "Please enter a valid locale"
+        read -p "Reenter your locale: " locale
+    done
     info "Generating locale"
     sed -i "s/\#en_US/en_US/" /etc/locale.gen
     locale-gen
