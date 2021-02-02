@@ -80,7 +80,7 @@ installgrub() {
     pacmaninstall "os-prober" "Detects other operating systems"
     pacmaninstall "ntfs-3g" "Driver for detecting Windows partition"
 
-    if [ ! -d /sys/firmware/efi ];
+    if [ ! -d /sys/firmware/efi ]; then
         part="$(df -h | grep -e "/$" | cut -d ' ' -f1)"
         grub-install "$part"
     else
