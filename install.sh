@@ -85,6 +85,7 @@ installgrub() {
 
     if [ ! -d /sys/firmware/efi ]; then
         part="$(df -h | grep -e "/$" | cut -d ' ' -f1)"
+        part=${part%?}
         grub-install "$part"
     else
         pacmaninstall "efibootmgr" "EFI Boot Manager"
