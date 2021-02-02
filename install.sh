@@ -75,6 +75,29 @@ chooseeditor() {
     done
 }
 
+installgrub() {
+    pacmaninstall "grub" "Bootloader"
+    pacmaninstall "os-prober" "Detects other operating systems"
+    pacmaninstall "ntfs-3g" "Driver for detecting Windows partition"
+
+    if [ ! -d /sys/firmware/efi ];
+        part="$(df -h | grep -e "/$" | cut -d ' ' -f1)"
+        grub-install "$part"
+    else
+        pacmaninstall "efibootmgr" "EFI Boot Manager"
+        read -p "Enter your EFI partition (/dev/<partition>): " part
+        [ -z "$(blkid | grep "$part")" ] && { err "Partition does not exist!"; exit 1; } # Check if partition exists
+        [ -z "$(blkid $part | grep -E -- "fat|vfat")" ] && { err "Partition is not a FAT32 partition!"; exit 1; } # Check if FAT
+
+        read -p "$(printf "Now enter the directory where the EFI partition should be mounted (e.g. /boot/efi).\nIf it does not exist, the script will create and mount the partition for you.\nPlease enter your EFI directory: ")" efidir
+        [ ! -d $efidir ] && { info "Creating EFI dir"; mkdir -p "$efidir" &>/dev/null; }
+        [ -n "$(mount $part $efidir)" ] && { err "Partition \'$part\' is already mounted!"; exit 1; }
+        grub-install --efi-directory="$efidir" --bootloader-id=GRUB --target=x86_64-efi
+    fi
+
+    grub-mkconfig -o /boot/grub/grub.cfg
+}
+
 settimezone() {
     yesnodialog "The following timezone will be used: Europe/Berlin\nDo you want to keep this?" "" "read -p 'Please enter your timezone: ' timezone"
     while [ ! -e /usr/share/zoneinfo/"$timezone" ]; do
