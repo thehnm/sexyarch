@@ -359,6 +359,7 @@ clear
 
 queue "initialcheck" \
       "chooseeditor" \
+      "installgrub" \
       "installfullsystem" \
       "getuserandpass" \
       "usercheck" \
