@@ -69,7 +69,7 @@ preinstallmsg() {
 }
 
 chooseeditor() {
-    yesnodialog "The default editor is \'vim\'. Make sure it is installed.\nOtherwise, enter the editor of your choice.\nDo you want to use \'vim\'?" "" "read -p 'Please enter your editor: ' editor"
+    yesnodialog "The default editor is \'vim\'. Make sure it is installed.\nOtherwise, enter the editor of your choice.\n\nDo you want to use \'vim\'?" "" "read -p 'Please enter your editor: ' editor"
     while [ -z "$(builtin type -p $editor)" ]; do
         err "Editor not found! Make sure your editor is installed or accessible from your PATH.\nOr choose another editor."
         read -p 'Reenter your editor: ' editor
@@ -90,7 +90,9 @@ installgrub() {
         [ -z "$(blkid | grep "$part")" ] && { err "Partition does not exist!"; exit 1; } # Check if partition exists
         [ -z "$(blkid $part | grep -E -- "fat|vfat")" ] && { err "Partition is not a FAT32 partition!"; exit 1; } # Check if FAT
 
-        read -p "$(printf "Now enter the directory where the EFI partition should be mounted (e.g. /boot/efi).\nIf it does not exist, the script will create and mount the partition for you.\nPlease enter your EFI directory: ")" efidir
+        printf "\n"
+
+        read -p "$(printf "Now enter the directory where the EFI partition should be mounted (e.g. /boot/efi).\nIf it does not exist, the script will create and mount the partition for you.\n\nPlease enter your EFI directory: ")" efidir
         [ ! -d $efidir ] && { info "Creating EFI dir"; mkdir -p "$efidir" &>/dev/null; }
         [ -n "$(mount $part $efidir)" ] && { err "Partition \'$part\' is already mounted!"; exit 1; }
         grub-install --efi-directory="$efidir" --bootloader-id=GRUB --target=x86_64-efi
@@ -100,7 +102,7 @@ installgrub() {
 }
 
 settimezone() {
-    yesnodialog "The following timezone will be used: Europe/Berlin\nDo you want to keep this?" "" "read -p 'Please enter your timezone: ' timezone"
+    yesnodialog "The following timezone will be used: Europe/Berlin\n\nDo you want to keep this?" "" "read -p 'Please enter your timezone: ' timezone"
     while [ ! -e /usr/share/zoneinfo/"$timezone" ]; do
         err "Please enter a valid timezone!"
         read -p "Reenter your timezone: " timezone
@@ -111,7 +113,7 @@ settimezone() {
 }
 
 genlocale() {
-    yesnodialog "The following locale will be set: en_US\nDo you want to keep this?" "" "read -p 'Enter locale to use: ' locale"
+    yesnodialog "The following locale will be set: en_US\n\nDo you want to keep this?" "" "read -p 'Enter locale to use: ' locale"
     while [ -z "$(grep $locale /etc/locale.gen)" ]; do
         err "Please enter a valid locale"
         read -p "Reenter your locale: " locale
@@ -139,7 +141,7 @@ sethostname() {
 }
 
 installfullsystem() {
-    yesnodialog "In addition to user configuration, this script can also handle setting the hostname,\ntimezone and locale for a fully featured system.\nDo you want configure these settings?" "queue sethostname settimezone genlocale"
+    yesnodialog "In addition to user configuration, this script can also handle setting the hostname,\ntimezone and locale for a fully featured system.\n\nDo you want configure these settings?" "queue sethostname settimezone genlocale"
 }
 
 islaptop() {
