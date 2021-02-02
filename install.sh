@@ -70,6 +70,12 @@ preinstallmsg() {
     infodialog "This script will install a ready-to-use Arch Linux system with my personal configuration."
 }
 
+setrootpasswd() {
+    if [ -n "$(cat /etc/shadow | grep 'root' | cut -d ':' -f2 | grep -E -- '!\*|\*')" ]; then
+        yesnodialog "No password for root is set. Do you want to set it?" "passwd"
+    fi
+}
+
 chooseeditor() {
     yesnodialog "The default editor is ${BOLD}vim${NORMAL}. Make sure it is installed.\nOtherwise, enter the editor of your choice.\n\nDo you want to use ${BOLD}vim${NORMAL}?" "" "read -p 'Please enter your editor: ' editor"
     while [ -z "$(builtin type -p $editor)" ]; do
@@ -364,6 +370,7 @@ currentdir=$(pwd)
 clear
 
 queue "initialcheck" \
+      "setrootpasswd" \
       "chooseeditor" \
       "installgrub" \
       "installfullsystem" \
