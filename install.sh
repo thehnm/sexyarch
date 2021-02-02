@@ -14,6 +14,8 @@ ORANGE='\033[0;33m'
 PURPLE='\033[0;35m'
 CYAN='\033[1;36m'
 NC='\033[0m' # No Color
+BOLD=$(tput bold)
+NORMAL=$(tput sgr0)
 
 err() {
     printf "${RED}$1${NC}\n"
@@ -46,7 +48,7 @@ yesnodialog() {
 infodialog() {
     printf "$1\n"
     printf "\n"
-    yesnodialog "Do you want to continue?" "" "exit 1"
+    yesnodialog "Do you want to ${BOLD}continue${NORMAL}?" "" "exit 1"
 }
 
 queue() {
@@ -69,7 +71,7 @@ preinstallmsg() {
 }
 
 chooseeditor() {
-    yesnodialog "The default editor is \'vim\'. Make sure it is installed.\nOtherwise, enter the editor of your choice.\n\nDo you want to use \'vim\'?" "" "read -p 'Please enter your editor: ' editor"
+    yesnodialog "The default editor is ${BOLD}vim${NORMAL}. Make sure it is installed.\nOtherwise, enter the editor of your choice.\n\nDo you want to use ${BOLD}vim${NORMAL}?" "" "read -p 'Please enter your editor: ' editor"
     while [ -z "$(builtin type -p $editor)" ]; do
         err "Editor not found! Make sure your editor is installed or accessible from your PATH.\nOr choose another editor."
         read -p 'Reenter your editor: ' editor
@@ -102,7 +104,7 @@ installgrub() {
 }
 
 settimezone() {
-    yesnodialog "The following timezone will be used: Europe/Berlin\n\nDo you want to keep this?" "" "read -p 'Please enter your timezone: ' timezone"
+    yesnodialog "The following timezone will be used: ${BOLD}Europe/Berlin${NORMAL}\n\nDo you want to ${BOLD}keep${NORMAL} this?" "" "read -p 'Please enter your timezone: ' timezone"
     while [ ! -e /usr/share/zoneinfo/"$timezone" ]; do
         err "Please enter a valid timezone!"
         read -p "Reenter your timezone: " timezone
@@ -113,7 +115,7 @@ settimezone() {
 }
 
 genlocale() {
-    yesnodialog "The following locale will be set: en_US\n\nDo you want to keep this?" "" "read -p 'Enter locale to use: ' locale"
+    yesnodialog "The following locale will be set: ${BOLD}en_US${NORMAL}\n\nDo you want to ${BOLD}keep${NORMAL} this?" "" "read -p 'Enter locale to use: ' locale"
     while [ -z "$(grep $locale /etc/locale.gen)" ]; do
         err "Please enter a valid locale"
         read -p "Reenter your locale: " locale
