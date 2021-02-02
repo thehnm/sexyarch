@@ -45,6 +45,7 @@ yesnodialog() {
 
 infodialog() {
     printf "$1\n"
+    printf "\n"
     yesnodialog "Do you want to continue?" "" "exit 1"
 }
 
