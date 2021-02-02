@@ -111,22 +111,26 @@ installgrub() {
 }
 
 settimezone() {
-    yesnodialog "The following timezone will be used: ${BOLD}Europe/Berlin${NORMAL}\n\nDo you want to ${BOLD}keep${NORMAL} this?" "" "read -p 'Please enter your timezone: ' timezone"
-    while [ ! -e /usr/share/zoneinfo/"$timezone" ]; do
-        err "Please enter a valid timezone!"
-        read -p "Reenter your timezone: " timezone
-    done
+    if [ "$1" = "interactive" ]; then
+        read -p 'Please enter your timezone: ' timezone
+        while [ ! -e /usr/share/zoneinfo/"$timezone" ]; do
+            err "Please enter a valid timezone!"
+            read -p "Reenter your timezone: " timezone
+        done
+    fi
     info "Setting timezone"
     ln -sf /usr/share/zoneinfo/"$timezone" /etc/localtime &>/dev/null
     hwclock --systohc
 }
 
 genlocale() {
-    yesnodialog "The following locale will be set: ${BOLD}en_US${NORMAL}\n\nDo you want to ${BOLD}keep${NORMAL} this?" "" "read -p 'Enter locale to use: ' locale"
-    while [ -z "$(grep $locale /etc/locale.gen)" ]; do
-        err "Please enter a valid locale"
-        read -p "Reenter your locale: " locale
-    done
+    if [ "$1" = "interactive" ]; then
+        read -p 'Enter locale to use: ' locale
+        while [ -z "$(grep $locale /etc/locale.gen)" ]; do
+            err "Please enter a valid locale"
+            read -p "Reenter your locale: " locale
+        done
+    fi
     info "Generating locale"
     sed -i "s/\#$locale/$locale/" /etc/locale.gen
     locale-gen
@@ -149,8 +153,15 @@ sethostname() {
     echo "127.0.1.1 $hostname.localdomain $hostname" >> /etc/hosts
 }
 
+setdefaults() {
+    yesnodialog "The following defaults will be used:\n- Timezone: $timezone\n- Locale: $locale\nDo you want to ${BOLD}keep${NORMAL} them? Otherwise, edit them manually."\
+                "queue settimezone genlocale"\
+                "queue \"settimezone interactive\" \"genlocale interactive\""
+}
+
 installfullsystem() {
-    yesnodialog "In addition to user configuration, this script can also handle setting the hostname,\ntimezone and locale for a fully featured system.\n\nDo you want configure these settings?" "queue sethostname settimezone genlocale"
+    yesnodialog "In addition to user configuration, this script can also handle setting the hostname,\ntimezone and locale for a fully featured system.\n\nDo you want configure these settings?"\
+                "queue sethostname setdefaults"
 }
 
 islaptop() {
@@ -373,15 +384,15 @@ queue "initialcheck" \
       "setrootpasswd" \
       "chooseeditor" \
       "installgrub" \
-      "installfullsystem" \
       "getuserandpass" \
       "usercheck" \
       "adduserandpass" \
       "newperms \"%wheel ALL=(ALL) ALL\\n%wheel ALL=(ALL) NOPASSWD: /usr/bin/shutdown,/usr/bin/reboot,/usr/bin/systemctl suspend,/usr/bin/wifi-menu,/usr/bin/mount,/usr/bin/umount,/usr/bin/pacman -Syu,/usr/bin/pacman -Syyu,/usr/bin/packer -Syu,/usr/bin/packer -Syyu,/usr/bin/systemctl restart NetworkManager,/usr/bin/rc-service NetworkManager restart,/usr/bin/pacman -Syyu --noconfirm,/usr/bin/loadkeys,/usr/bin/yay\"" \
+      "installyay || { err 'yay has to be installed to continue'; exit 1; }" \
       "islaptop" \
       "downloadandeditpackages" \
+      "installfullsystem" \
       "refreshkeys" \
-      "installyay || { err 'yay has to be installed to continue'; exit 1; }" \
       "install" \
       "installdotfiles" \
       "installantibody" \
