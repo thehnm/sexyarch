@@ -149,7 +149,7 @@ getuserpass() {
 
 downloadandeditpackages() { \
     [ ! -f packages.csv ] && info "Downloading packages file" && curl https://raw.githubusercontent.com/thehnm/tarbs/master/packages.csv > packages.csv
-    [ "$editpackages" = 1 ] && $editor packages.csv
+    [ "$editpackages" = 1 ] && $editor packages.csv && clear
 }
 
 adduserandpass() { \
@@ -381,7 +381,7 @@ cleanup() {
 
 ###############################################################################
 
-trap "cleanup" SIGINT SIGTERM
+trap cleanup INT SIGINT SIGTERM
 
 currentdir=$(pwd)
 
