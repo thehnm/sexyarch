@@ -124,7 +124,7 @@ initialcheck() {
 }
 
 usercheck() {
-    ! (id -u $name &>/dev/null) && preinstallmsg || warn "User \'$name\' already exits.\nThe following steps will overwrite the user's password and settings"
+    ! (id -u $name &>/dev/null) || warn "User \'$name\' already exits.\nThe following steps will overwrite the user's password and settings"
 }
 
 getuserpass() {
