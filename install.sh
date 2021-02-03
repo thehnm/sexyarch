@@ -64,13 +64,14 @@ usage() {
     printf "  -u Set user name\n\n"
     printf "Optional Arguments\n"
     printf "  -h Display help\n"
-    printf "  -e Edit the packages file\n"
-    printf "  -g Install GRUB bootloader\n"
+    printf "  -e Choose another editor (default: $editor)\n"
+    printf "  -f Edit the packages file (default: no)\n"
+    printf "  -g Install GRUB bootloader (default: no)\n"
     printf "  -d Specify EFI boot directory. Needed when installing GRUB\n"
     printf "  -p Specify EFI boot partition. Needed when installing GRUB\n"
     printf "  -l Set locale, e.g. en_US\n"
     printf "  -t Set timezone, e.g. Europe/London\n"
-    printf "  -t Set hostname\n"
+    printf "  -n Set hostname\n"
 }
 
 while getopts "u:hget:l:n:" arg; do
@@ -83,7 +84,8 @@ while getopts "u:hget:l:n:" arg; do
         l) locale=$OPTARG ;;
         t) timezone=$OPTARG ;;
         n) hostname=$OPTARG ;;
-        e) editpackages=1 ;;
+        f) editpackages=1 ;;
+        e) editor=$OPTARG ;;
         ?) echo "Invalid option: -${OPTARG}."; echo; usage; exit 1 ;;
         :) echo "Invalid Option: -$OPTARG requires an argument"; usage; exit 1;;
     esac
