@@ -138,17 +138,13 @@ usercheck() {
 
 getuserpass() {
     read -s -p "Enter password for $name: " pass1
-    printf "\n"
     read -s -p "Reenter password for $name: " pass2
-    printf "\n"
 
     while ! [[ ${pass1} == ${pass2} ]]; do
         unset pass1 pass2
         err "Passwords do not match. Please enter your password again"
         read -s -p "Enter password for $name: " pass1
-        printf "\n"
         read -s -p "Reenter password for $name: " pass2
-        printf "\n"
     done
 }
 
