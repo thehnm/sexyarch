@@ -1,9 +1,10 @@
 #!/usr/bin/env bash
 
 [ -z ${dotfilesrepo+x} ] && dotfilesrepo="https://github.com/thehnm/dotfiles.git"
-[ -z ${locale+x} ] && locale="en_US"
 [ -z ${editor+x} ] && editor="vim"
-[ -z ${timezone+x} ] && timezone="Europe/Berlin"
+[ -z ${grub+x} ] && grub=0
+[ -z ${editpackages+x} ] && editpackages=0
+[ -z ${islaptop+x} ] && islaptop=0
 
 ###############################################################################
 
@@ -45,12 +46,6 @@ yesnodialog() {
     done
 }
 
-infodialog() {
-    printf "$1\n"
-    printf "\n"
-    yesnodialog "Do you want to ${BOLD}continue${NORMAL}?" "" "exit 1"
-}
-
 queue() {
 for command in "$@"; do
     printf "\n"
@@ -58,121 +53,79 @@ for command in "$@"; do
 done
 }
 
+###############################################################################
+
+usage() {
+    printf "Usage: install.sh -u username [-hgdpltne]\n\n"
+    printf "To simply install my dotfiles without configuring a full Arch Linux system:\n"
+    printf "> install.sh -u username\n\n"
+    printf "  -u Set user name\n\n"
+    printf "Optional Arguments\n"
+    printf "  -h Display help"
+    printf "  -e Edit the packages file"
+    printf "  -g Install GRUB bootloader\n"
+    printf "  -d For UEFI. Specify EFI boot directory. Needed when installing GRUB\n"
+    printf "  -p For UEFI. Specify EFI boot partition. Needed when installing GRUB\n"
+    printf "  -l Set locale, e.g. en_US\n"
+    printf "  -t Set timezone, e.g. Europe/London\n"
+    printf "  -t Set hostname\n"
+}
+
+while getopts "u:hget:l:n:" arg; do
+    case "${arg}" in
+        u) name=$OPTARG ;;
+        h) usage; exit 0 ;;
+        g) grub=1 ;;
+        d) efidir=$OPTARG ;;
+        p) efipart=$OPTARG ;;
+        l) locale=$OPTARG ;;
+        t) timezone=$OPTARG ;;
+        n) hostname=$OPTARG ;;
+        e) editpackages=1 ;;
+        ?) echo "Invalid option: -${OPTARG}."; echo; usage; exit 1 ;;
+        :) echo "Invalid Option: -$OPTARG requires an argument"; usage; exit 1;;
+    esac
+done
+
+[ -z ${name+x} ] && { err "Username [-u] has to be set!"; exit 1; }
+shift $((OPTIND -1))
+
+###############################################################################
+
 initialcheck() {
     info "Initial check"
     pacman -S --noconfirm --needed git &>/dev/null || { err "You are not running this script as root."; exit 1; }
-}
 
-preinstallmsg() {
-    infodialog "This script will install a ready-to-use Arch Linux system with my personal configuration."
-}
-
-setrootpasswd() {
-    if [ -n "$(cat /etc/shadow | grep 'root' | cut -d ':' -f2 | grep -E -- '!\*|\*')" ]; then
-        yesnodialog "No password for root is set. Do you want to set it?" "passwd"
-    fi
-}
-
-chooseeditor() {
-    yesnodialog "The default editor is ${BOLD}vim${NORMAL}. Make sure it is installed.\nOtherwise, enter the editor of your choice.\n\nDo you want to use ${BOLD}vim${NORMAL}?" "" "read -p 'Please enter your editor: ' editor"
-    while [ -z "$(builtin type -p $editor)" ]; do
-        err "Editor not found! Make sure your editor is installed or accessible from your PATH.\nOr choose another editor."
-        read -p 'Reenter your editor: ' editor
-    done
-}
-
-installgrub() {
-    pacmaninstall "grub" "Bootloader"
-    pacmaninstall "os-prober" "Detects other operating systems"
-    pacmaninstall "ntfs-3g" "Driver for detecting Windows partition"
-
-    if [ ! -d /sys/firmware/efi ]; then
-        part="$(df -h | grep -e "/$" | cut -d ' ' -f1)"
-        part=${part%?}
-        grub-install "$part"
-    else
-        pacmaninstall "efibootmgr" "EFI Boot Manager"
-        read -p "Enter your EFI partition (/dev/<partition>): " part
-        [ -z "$(blkid | grep "$part")" ] && { err "Partition does not exist!"; exit 1; } # Check if partition exists
-        [ -z "$(blkid $part | grep -E -- "fat|vfat")" ] && { err "Partition is not a FAT32 partition!"; exit 1; } # Check if FAT
-
-        printf "\n"
-
-        read -p "$(printf "Now enter the directory where the EFI partition should be mounted (e.g. /boot/efi).\nIf it does not exist, the script will create and mount the partition for you.\n\nPlease enter your EFI directory: ")" efidir
-        [ ! -d $efidir ] && { info "Creating EFI dir"; mkdir -p "$efidir" &>/dev/null; }
-        [ -n "$(mount $part $efidir)" ] && { err "Partition \'$part\' is already mounted!"; exit 1; }
-        grub-install --efi-directory="$efidir" --bootloader-id=GRUB --target=x86_64-efi
-    fi
-
-    grub-mkconfig -o /boot/grub/grub.cfg
-}
-
-settimezone() {
-    if [ "$1" = "interactive" ]; then
-        read -p 'Please enter your timezone: ' timezone
-        while [ ! -e /usr/share/zoneinfo/"$timezone" ]; do
-            err "Please enter a valid timezone!"
-            read -p "Reenter your timezone: " timezone
-        done
-    fi
-    info "Setting timezone"
-    ln -sf /usr/share/zoneinfo/"$timezone" /etc/localtime &>/dev/null
-    hwclock --systohc
-}
-
-genlocale() {
-    if [ "$1" = "interactive" ]; then
-        read -p 'Enter locale to use: ' locale
-        while [ -z "$(grep $locale /etc/locale.gen)" ]; do
-            err "Please enter a valid locale"
-            read -p "Reenter your locale: " locale
-        done
-    fi
-    info "Generating locale"
-    sed -i "s/\#$locale/$locale/" /etc/locale.gen
-    locale-gen
-    info "Setting locale"
-    echo "LANG=$locale.UTF-8" > /etc/locale.conf
-    echo "LC_ALL=$locale.UTF-8" >> /etc/locale.conf
-}
-
-sethostname() {
-    read -p "Please enter your hostname: " hostname
-    hostre="^[a-z0-9][a-z0-9.-_]*$"
-    while ! [[ "${hostname}" =~ ${hostre} ]]; do
-        err "Hostname not valid."
-        read -p "Please enter your hostname again: " hostname
-    done
-    info "Setting hostname"
-    echo "$hostname" > /etc/hostname
-    echo "127.0.0.1 localhost" > /etc/hosts
-    echo "::1 localhost" >> /etc/hosts
-    echo "127.0.1.1 $hostname.localdomain $hostname" >> /etc/hosts
-}
-
-setdefaults() {
-    yesnodialog "The following defaults will be used:\n- Timezone: $timezone\n- Locale: $locale\nDo you want to ${BOLD}keep${NORMAL} them? Otherwise, edit them manually."\
-                "queue settimezone genlocale"\
-                "queue \"settimezone interactive\" \"genlocale interactive\""
-}
-
-installfullsystem() {
-    yesnodialog "In addition to user configuration, this script can also handle setting the hostname,\ntimezone and locale for a fully featured system.\n\nDo you want configure these settings?"\
-                "queue sethostname setdefaults"
-}
-
-islaptop() {
-    yesnodialog "Do you install this on a laptop?" "laptop=1" "laptop=0"
-}
-
-getuserandpass() {
-    read -p "Please enter your username: " name
     namere="^[a-z_][a-z0-9_-]*$"
-    while ! [[ "${name}" =~ ${namere} ]]; do
-        err "Username not valid."
-        read -p "Please enter your username again: " name
-    done
+    ! [[ "${name}" =~ ${namere} ]] && err "Username not valid!" && exit 1
 
+    [ -z "$(builtin type -p $editor)" ] && err "Editor \'${editor}\' not found" && exit 1
+
+    # Check if all necessary variables for GRUB installation are correctly set
+    if [ "$grub" = 1 -a -d /sys/firmware/efi ]; then
+        [ -z ${efidir+x} ] && { err "Installation on UEFI system. EFI directory not set."; exit 1; }
+        [ -z ${efipart+x} ] && { err "Installation on UEFI system. EFI partition not set."; exit 1; }
+
+        [ -z "$(blkid | grep "$efipart")" ] && { err "Partition "" does not exist!"; exit 1; } # Check if partition exists
+        [ -z "$(blkid $efipart| grep -E -- "fat|vfat")" ] && { err "Partition is not a FAT32 partition!"; exit 1; } # Check if FAT
+
+        mountpoint=$(df -h | grep $efipart | rev | cut -d ' ' -f1 | rev)
+        [ -n "$mountpoint" ] && [ "$mountpoint" != "$efidir" ] && err "Partition \'$efipart\' is already mounted elsewhere" && exit 1
+    fi
+
+    [ -n "${timezone}" ] && [ ! -e /usr/share/zoneinfo/"$timezone" ] && err "Timezone \'$timezone\' not found. Check if it is correctly spelled, e.g. Europe/London" && exit 1
+
+    [ -n "${locale}" ] && [ -z "$(grep $locale /etc/locale.gen)" ] && err "Locale \'$locale\' not found. Check if it is correctly spelled, e.g. en_US" && exit 1
+
+    hostre="^[a-z0-9][a-z0-9.-_]*$"
+    [ -n "${hostname}" ] && ! [[ "${hostname}" =~ ${hostre} ]] && err "Hostname \'$hostname\' not valid" && exit 1
+}
+
+usercheck() {
+    ! (id -u $name &>/dev/null) && preinstallmsg || warn "User \'$name\' already exits.\nThe following steps will overwrite the user's password and settings"
+}
+
+getuserpass() {
     read -s -p "Enter password for $name: " pass1
     printf "\n"
     read -s -p "Reenter password for $name: " pass2
@@ -188,8 +141,9 @@ getuserandpass() {
     done
 }
 
-usercheck() {
-    ! (id -u $name &>/dev/null) && preinstallmsg || warn "User \'$name\' already exits.\nThe following steps will overwrite the user's password and settings"
+downloadandeditpackages() { \
+    [ ! -f packages.csv ] && info "Downloading packages file" && curl https://raw.githubusercontent.com/thehnm/tarbs/master/packages.csv > packages.csv
+    [ "$editpackages" = 1 ] && "$editor packages.csv"
 }
 
 adduserandpass() { \
@@ -210,27 +164,21 @@ newperms() { \
     echo -e "$@ #SCRIPT" >> /etc/sudoers
 }
 
-###############################################################################
-
-downloadandeditpackages() { \
-    cd "$currentdir"
-    [ ! -f packages.csv ] && curl https://raw.githubusercontent.com/thehnm/tarbs/master/packages.csv > packages.csv
-    yesnodialog "Do you want to edit the list of packages to be installed?" "$editor packages.csv"
-}
-
-refreshkeys() { \
-    info "Refreshing Arch Linux Keyring"
-    pacman --noconfirm -Sy archlinux-keyring &>/dev/null
-}
-
 installyay() { \
     info "Installing yay"
     if [ ! -f /usr/bin/yay ]; then
         pacman --noconfirm -S git &>/dev/null
         sudo -u $name git clone https://aur.archlinux.org/yay.git /tmp/yay &>/dev/null
+    (
         cd /tmp/yay
         sudo -u $name makepkg --noconfirm -si &>/dev/null
+    )
     fi
+}
+
+refreshkeys() { \
+    info "Refreshing Arch Linux Keyring"
+    pacman --noconfirm -Sy archlinux-keyring &>/dev/null
 }
 
 pacmaninstall() { \
@@ -263,12 +211,14 @@ loopgitinstall() {
     dir="$repodir/$progname"
     info "[$n/$total] $1. $2"
     putgitrepo "$1" "$dir"
-    cd "$dir" || exit
-    make install >/dev/null 2>&1
-    cd "$currentdir" || return ;
+    (
+        cd "$dir" || exit
+        make install >/dev/null 2>&1
+    )
 }
 
-setup_libinput() { \
+setup_libinput() {
+    [ "$islaptop" = 0 ] && return
     pacmaninstall "libinput" "Input device management and event handling library"
     info "Configure libinput for laptops"
     ln -s /usr/share/X11/xorg.conf.d/40-libinput.conf /etc/X11/xorg.conf.d/40-libinput.conf
@@ -280,7 +230,6 @@ setup_libinput() { \
 }
 
 install() {
-    cd "$currentdir"
     pacmaninstall "xorg-server" "Xorg X Server"
     pacmaninstall "xorg-xinit" "X.Org initialisation program"
     pacmaninstall "xorg-xsetroot" "Utility for setting root window to pattern or color"
@@ -318,7 +267,7 @@ installantibody() {
 installdotfiles() {
     info "Installing dotfiles"
     putgitrepo "$dotfilesrepo" "/home/$name"
-    cd /home/"$name" && sudo -u "$name" git config --local status.showUntrackedFiles no
+    ( cd /home/"$name" && sudo -u "$name" git config --local status.showUntrackedFiles no )
 }
 
 systembeepoff() {
@@ -362,6 +311,61 @@ miscellaneous() {
     sudo -u "$name" mkdir -p /home/"$name"/pics
 }
 
+settimezone() {
+    [ -z ${timezone+x} ] && return
+
+    info "Setting timezone"
+    ln -sf /usr/share/zoneinfo/"$timezone" /etc/localtime &>/dev/null
+    hwclock --systohc
+}
+
+genlocale() {
+    [ -z ${locale+x} ] && return
+
+    info "Generating locale"
+    sed -i "s/\#$locale/$locale/" /etc/locale.gen
+    locale-gen
+    info "Setting locale"
+    echo "LANG=$locale.UTF-8" > /etc/locale.conf
+    echo "LC_ALL=$locale.UTF-8" >> /etc/locale.conf
+}
+
+sethostname() {
+    [ -z ${hostname+x} ] && return
+
+    info "Setting hostname"
+    echo "$hostname" > /etc/hostname
+    echo "127.0.0.1 localhost" > /etc/hosts
+    echo "::1 localhost" >> /etc/hosts
+    echo "127.0.1.1 $hostname.localdomain $hostname" >> /etc/hosts
+}
+
+installgrub() {
+    [ "$grub" = 0 ] && return
+    pacmaninstall "grub" "Bootloader"
+    pacmaninstall "os-prober" "Detects other operating systems"
+    pacmaninstall "ntfs-3g" "Driver for detecting Windows partition"
+
+    if [ -d /sys/firmware/efi ]; then
+        pacmaninstall "efibootmgr" "EFI Boot Manager"
+        [ ! -d $efidir ] && { info "Creating EFI dir"; mkdir -p "$efidir" &>/dev/null; }
+
+        info "Mounting partition \'$efipart\' to \'$efidir\'"
+        mount $part $efidir &>/dev/null
+
+        info "Installing GRUB"
+        grub-install --efi-directory="$efidir" --bootloader-id=GRUB --target=x86_64-efi &>/dev/null
+    else
+        part="$(df -h | grep -e "/$" | cut -d ' ' -f1)"
+        part=${part%?}
+
+        info "Installing GRUB"
+        grub-install "$part" &>/dev/null
+    fi
+
+    grub-mkconfig -o /boot/grub/grub.cfg
+}
+
 cleanup() {
     printf "\n"
     unset pass1 pass2
@@ -378,21 +382,21 @@ currentdir=$(pwd)
 clear
 
 queue "initialcheck" \
-      "setrootpasswd" \
-      "chooseeditor" \
-      "installgrub" \
-      "getuserandpass" \
       "usercheck" \
-      "adduserandpass" \
-      "newperms \"%wheel ALL=(ALL) ALL\\n%wheel ALL=(ALL) NOPASSWD: /usr/bin/shutdown,/usr/bin/reboot,/usr/bin/systemctl suspend,/usr/bin/wifi-menu,/usr/bin/mount,/usr/bin/umount,/usr/bin/pacman -Syu,/usr/bin/pacman -Syyu,/usr/bin/packer -Syu,/usr/bin/packer -Syyu,/usr/bin/systemctl restart NetworkManager,/usr/bin/rc-service NetworkManager restart,/usr/bin/pacman -Syyu --noconfirm,/usr/bin/loadkeys,/usr/bin/yay\"" \
-      "installyay || { err 'yay has to be installed to continue'; exit 1; }" \
-      "islaptop" \
+      "getuserpass" \
       "downloadandeditpackages" \
-      "installfullsystem" \
+      "adduserandpass" \
+      "newperms \"%wheel ALL=(ALL) NOPASSWD: ALL\"" \
+      "installyay || { err 'yay has to be installed to continue'; exit 1; }" \
       "refreshkeys" \
       "install" \
       "installdotfiles" \
       "installantibody" \
+      "newperms \"%wheel ALL=(ALL) ALL\\n%wheel ALL=(ALL) NOPASSWD: /usr/bin/shutdown,/usr/bin/reboot,/usr/bin/systemctl suspend,/usr/bin/wifi-menu,/usr/bin/mount,/usr/bin/umount,/usr/bin/pacman -Syu,/usr/bin/pacman -Syyu,/usr/bin/packer -Syu,/usr/bin/packer -Syyu,/usr/bin/systemctl restart NetworkManager,/usr/bin/rc-service NetworkManager restart,/usr/bin/pacman -Syyu --noconfirm,/usr/bin/loadkeys,/usr/bin/yay\"" \
       "serviceinit NetworkManager cronie ntpdate ssh" \
       "miscellaneous" \
+      "settimezone" \
+      "genlocale" \
+      "sethostname" \
+      "installgrub" \
       "succ 'Installation is done. You can reboot now'"
