@@ -74,7 +74,7 @@ usage() {
     printf "  -n Set hostname\n"
 }
 
-while getopts "u:hget:l:n:" arg; do
+while getopts "u:hgd:p:l:t:n:fe:" arg; do
     case "${arg}" in
         u) name=$OPTARG ;;
         h) usage; exit 0 ;;
