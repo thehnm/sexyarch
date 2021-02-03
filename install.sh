@@ -48,7 +48,6 @@ yesnodialog() {
 
 queue() {
 for command in "$@"; do
-    printf "\n"
     eval "$command"
 done
 }
