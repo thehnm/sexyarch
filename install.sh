@@ -369,7 +369,7 @@ installgrub() {
         grub-install "$part" &>/dev/null
     fi
 
-    grub-mkconfig -o /boot/grub/grub.cfg
+    grub-mkconfig -o /boot/grub/grub.cfg &>/dev/null
 }
 
 cleanup() {
