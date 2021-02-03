@@ -274,8 +274,10 @@ installantibody() {
 
 installdotfiles() {
     info "Installing dotfiles"
+(
     putgitrepo "$dotfilesrepo" "/home/$name"
-    ( cd /home/"$name" && sudo -u "$name" git config --local status.showUntrackedFiles no )
+    cd /home/"$name" && sudo -u "$name" git config --local status.showUntrackedFiles no
+)
 }
 
 systembeepoff() {
