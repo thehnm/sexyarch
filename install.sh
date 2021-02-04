@@ -334,7 +334,7 @@ genlocale() {
 
     info "Generating locale"
     sed -i "s/\#$locale/$locale/" /etc/locale.gen
-    locale-gen
+    locale-gen &>/dev/null
     info "Setting locale"
     printf "LANG=$locale.UTF-8\n" > /etc/locale.conf
     printf "LC_ALL=$locale.UTF-8\n" >> /etc/locale.conf
