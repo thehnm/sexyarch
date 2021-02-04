@@ -361,7 +361,7 @@ installgrub() {
         [ ! -d $efidir ] && { info "Creating EFI dir"; mkdir -p "$efidir" &>/dev/null; }
 
         info "Mounting partition \'$efipart\' to \'$efidir\'"
-        mount $part $efidir &>/dev/null
+        mount $efipart $efidir &>/dev/null
 
         info "Installing GRUB"
         grub-install --efi-directory="$efidir" --bootloader-id=GRUB --target=x86_64-efi &>/dev/null
