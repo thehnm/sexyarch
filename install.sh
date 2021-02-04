@@ -92,8 +92,8 @@ while getopts "u:hgd:p:l:t:n:fe:" arg; do
         n) hostname=$OPTARG ;;
         f) editpackages=1 ;;
         e) editor=$OPTARG ;;
-        ?) echo "Invalid option: -${OPTARG}."; echo; usage; exit 1 ;;
-        :) echo "Invalid Option: -$OPTARG requires an argument"; usage; exit 1;;
+        ?) printf "Invalid option: -${OPTARG}.\n\n"; usage; exit 1 ;;
+        :) printf "Invalid Option: -$OPTARG requires an argument\n\n"; usage; exit 1;;
     esac
 done
 
@@ -149,30 +149,30 @@ getuserpass() {
     done
 }
 
-downloadandeditpackages() { \
+downloadandeditpackages() {
     [ ! -f packages.csv ] && info "Downloading packages file" && curl https://raw.githubusercontent.com/thehnm/tarbs/master/packages.csv > packages.csv
     [ "$editpackages" = 1 ] && $editor packages.csv && clear
 }
 
-adduserandpass() { \
+adduserandpass() {
     # Adds user `$name` with password $pass1.
     info "Add user \'$name\'"
     useradd -m -g wheel -s /bin/zsh "$name" &>/dev/null ||
     usermod -a -G wheel "$name" && mkdir -p /home/"$name" && chown "$name":wheel /home/"$name"
     usermod -a -G video "$name"
     repodir="/home/$name/.local/src"; mkdir -p "$repodir"; chown -R "$name":wheel $(dirname "$repodir")
-    echo "$name:$pass1" | chpasswd
+    printf "$name:$pass1" | chpasswd
     unset pass1 pass2 ;
 }
 
-newperms() { \
+newperms() {
     # Set special sudoers settings for install (or after).
     info "Setting sudoers"
     sed -i "/#SCRIPT/d" /etc/sudoers
-    echo -e "$@ #SCRIPT" >> /etc/sudoers
+    printf "%b #SCRIPT\n" "$@" >> /etc/sudoers
 }
 
-installyay() { \
+installyay() {
     info "Installing yay"
     if [ ! -f /usr/bin/yay ]; then
         pacman --noconfirm -S git &>/dev/null
@@ -184,12 +184,12 @@ installyay() { \
     fi
 }
 
-refreshkeys() { \
+refreshkeys() {
     info "Refreshing Arch Linux Keyring"
     pacman --noconfirm -Sy archlinux-keyring &>/dev/null
 }
 
-pacmaninstall() { \
+pacmaninstall() {
     info "Install $1. \"$2\""
     pacman --noconfirm --needed -S "$1" &>/dev/null
 }
@@ -199,7 +199,7 @@ looppacmaninstall() {
     pacman --noconfirm --needed -S "$1" &>/dev/null
 }
 
-loopaurinstall() { \
+loopaurinstall() {
     info "[$n/$total] $1. $2"
     yes | sudo -u $name yay --noconfirm -S "$1" &>/dev/null
 }
@@ -283,7 +283,7 @@ installdotfiles() {
 systembeepoff() {
     info "Disabling beep sound"
     rmmod pcspkr
-    echo "blacklist pcspkr" > /etc/modprobe.d/nobeep.conf
+    printf "blacklist pcspkr\n" > /etc/modprobe.d/nobeep.conf
 }
 
 resetpulse() { \
@@ -336,18 +336,18 @@ genlocale() {
     sed -i "s/\#$locale/$locale/" /etc/locale.gen
     locale-gen
     info "Setting locale"
-    echo "LANG=$locale.UTF-8" > /etc/locale.conf
-    echo "LC_ALL=$locale.UTF-8" >> /etc/locale.conf
+    printf "LANG=$locale.UTF-8\n" > /etc/locale.conf
+    printf "LC_ALL=$locale.UTF-8\n" >> /etc/locale.conf
 }
 
 sethostname() {
     [ -z ${hostname+x} ] && return
 
     info "Setting hostname"
-    echo "$hostname" > /etc/hostname
-    echo "127.0.0.1 localhost" > /etc/hosts
-    echo "::1 localhost" >> /etc/hosts
-    echo "127.0.1.1 $hostname.localdomain $hostname" >> /etc/hosts
+    printf "$hostname\n" > /etc/hostname
+    printf "127.0.0.1 localhost\n" > /etc/hosts
+    printf "::1 localhost\n" >> /etc/hosts
+    printf "127.0.1.1 $hostname.localdomain $hostname\n" >> /etc/hosts
 }
 
 installgrub() {
@@ -402,7 +402,7 @@ queue "initialcheck" \
       "install" \
       "installdotfiles" \
       "installantibody" \
-      "newperms \"%wheel ALL=(ALL) ALL\\n%wheel ALL=(ALL) NOPASSWD: /usr/bin/shutdown,/usr/bin/reboot,/usr/bin/systemctl suspend,/usr/bin/wifi-menu,/usr/bin/mount,/usr/bin/umount,/usr/bin/pacman -Syu,/usr/bin/pacman -Syyu,/usr/bin/packer -Syu,/usr/bin/packer -Syyu,/usr/bin/systemctl restart NetworkManager,/usr/bin/rc-service NetworkManager restart,/usr/bin/pacman -Syyu --noconfirm,/usr/bin/loadkeys,/usr/bin/yay\"" \
+      "newperms \"%wheel ALL=(ALL) ALL\n%wheel ALL=(ALL) NOPASSWD: /usr/bin/shutdown,/usr/bin/reboot,/usr/bin/systemctl suspend,/usr/bin/wifi-menu,/usr/bin/mount,/usr/bin/umount,/usr/bin/pacman -Syu,/usr/bin/pacman -Syyu,/usr/bin/packer -Syu,/usr/bin/packer -Syyu,/usr/bin/systemctl restart NetworkManager,/usr/bin/rc-service NetworkManager restart,/usr/bin/pacman -Syyu --noconfirm,/usr/bin/loadkeys,/usr/bin/yay\"" \
       "serviceinit NetworkManager cronie ntpdate ssh" \
       "miscellaneous" \
       "settimezone" \
