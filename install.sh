@@ -248,7 +248,6 @@ install() {
 
     total=$(wc -l < packages.csv)
     total=$(( total - 1 ))
-    #aurinstalled=$(pacman -Qm | awk '{print $1}')
     while IFS=, read -r tag program comment; do
         case "$tag" in
             "") looppacmaninstall "$program" "$comment" ;;
