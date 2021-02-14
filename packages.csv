@@ -1,4 +1,9 @@
 #TAG,NAME IN REPO (or git url),PURPOSE (should be a verb phrase to sound right while installing)
+,xorg-server,"Xorg X Server"
+,xorg-xinit,"X.Org initialisation program"
+,xorg-xsetroot,"Utility for setting root window to pattern or color"
+,xorg-xrandr,"Interface for RandR interface"
+,libxinerama,"X11 Xinerama extension library"
 ,neovim,"A tidier vim with some useful features"
 ,python-neovim,"Python client for neovim"
 ,dash,"minimal POSIX compliant shell"

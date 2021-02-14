@@ -190,16 +190,11 @@ refreshkeys() {
 }
 
 pacmaninstall() {
-    info "Install $1. \"$2\""
-    pacman --noconfirm --needed -S "$1" &>/dev/null
-}
-
-looppacmaninstall() {
     info "[$n/$total] $1. $2"
     pacman --noconfirm --needed -S "$1" &>/dev/null
 }
 
-loopaurinstall() {
+aurinstall() {
     info "[$n/$total] $1. $2"
     yes | sudo -u $name yay --noconfirm -S "$1" &>/dev/null
 }
@@ -214,7 +209,7 @@ putgitrepo() { # Downloads a gitrepo $1 and places the files in $2 only overwrit
 }
 
 # Requires the git repository to have some kind of build file/Makefile
-loopgitinstall() {
+gitinstall() {
     progname="$(basename "$1" .git)"
     dir="$repodir/$progname"
     info "[$n/$total] $1. $2"
@@ -225,10 +220,9 @@ loopgitinstall() {
     )
 }
 
-setup_libinput() {
+configurelibinput() {
     [ "$islaptop" = 0 ] && return
-    pacmaninstall "libinput" "Input device management and event handling library"
-    info "Configure libinput for laptops"
+    info "Configure touchpad for laptops"
     ln -s /usr/share/X11/xorg.conf.d/40-libinput.conf /etc/X11/xorg.conf.d/40-libinput.conf
     if [ -f configs/40-libinput.conf ]; then
         cp configs/40-libinput.conf /usr/share/X11/xorg.conf.d/40-libinput.conf
@@ -238,21 +232,22 @@ setup_libinput() {
 }
 
 install() {
-    pacmaninstall "xorg-server" "Xorg X Server"
-    pacmaninstall "xorg-xinit" "X.Org initialisation program"
-    pacmaninstall "xorg-xsetroot" "Utility for setting root window to pattern or color"
-    pacmaninstall "xorg-xrandr" "Interface for RandR interface"
-    pacmaninstall "libxinerama" "X11 Xinerama extension library"
+    if [ "$grub" = 1 ]; then
+        printf ",grub,\"Bootloader\"" >> packages.csv
+        printf ",os-prober,\"Detects other operating systems\"" >> packages.csv
+        printf ",ntfs-3g,\"Driver for detecting Windows partition\"" >> packages.csv
+        [ -d /sys/firmware/efi ] && printf ",efibootmgr,\"EFI Boot Manager\"" >> packages.csv
+    fi
 
-    [ "$laptop" = 1 ] && setup_libinput
+    [ "$islaptop" = 1 ] && printf ",libinput,\"Input device management and event handling library\"" >> packages.csv
 
     total=$(wc -l < packages.csv)
-    total=$(( total - 1 ))
+    total=$(( total - 1 )) # Remove header line
     while IFS=, read -r tag program comment; do
         case "$tag" in
-            "") looppacmaninstall "$program" "$comment" ;;
-            "A") loopaurinstall "$program" "$comment" ;;
-            "G") loopgitinstall "$program" "$comment" ;;
+            "") pacmaninstall "$program" "$comment" ;;
+            "A") aurinstall "$program" "$comment" ;;
+            "G") gitinstall "$program" "$comment" ;;
         esac
         n=$((n+1))
     done < packages.csv ;
@@ -351,12 +346,7 @@ sethostname() {
 
 installgrub() {
     [ "$grub" = 0 ] && return
-    pacmaninstall "grub" "Bootloader"
-    pacmaninstall "os-prober" "Detects other operating systems"
-    pacmaninstall "ntfs-3g" "Driver for detecting Windows partition"
-
     if [ -d /sys/firmware/efi ]; then
-        pacmaninstall "efibootmgr" "EFI Boot Manager"
         [ ! -d $efidir ] && { info "Creating EFI dir"; mkdir -p "$efidir" &>/dev/null; }
 
         info "Mounting partition \'$efipart\' to \'$efidir\'"
@@ -399,6 +389,7 @@ queue "initialcheck" \
       "installyay || { err 'yay has to be installed to continue'; exit 1; }" \
       "refreshkeys" \
       "install" \
+      "configurelibinput" \
       "installdotfiles" \
       "installantibody" \
       "newperms \"%wheel ALL=(ALL) ALL\n%wheel ALL=(ALL) NOPASSWD: /usr/bin/shutdown,/usr/bin/reboot,/usr/bin/systemctl suspend,/usr/bin/wifi-menu,/usr/bin/mount,/usr/bin/umount,/usr/bin/pacman -Syu,/usr/bin/pacman -Syyu,/usr/bin/packer -Syu,/usr/bin/packer -Syyu,/usr/bin/systemctl restart NetworkManager,/usr/bin/rc-service NetworkManager restart,/usr/bin/pacman -Syyu --noconfirm,/usr/bin/loadkeys,/usr/bin/yay\"" \
