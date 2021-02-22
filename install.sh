@@ -150,7 +150,7 @@ getuserpass() {
 }
 
 downloadandeditpackages() {
-    [ ! -f packages.csv ] && info "Downloading packages file" && curl https://raw.githubusercontent.com/thehnm/tarbs/master/packages.csv > packages.csv
+    [ ! -f packages.csv ] && info "Downloading packages file" && curl https://raw.githubusercontent.com/thehnm/autoarch/master/packages.csv > packages.csv
     [ "$editpackages" = 1 ] && $editor packages.csv && clear
 }
 
@@ -227,7 +227,7 @@ configurelibinput() {
     if [ -f configs/40-libinput.conf ]; then
         cp configs/40-libinput.conf /usr/share/X11/xorg.conf.d/40-libinput.conf
     else
-        curl https://raw.githubusercontent.com/thehnm/tarbs/master/configs/40-libinput.conf > /usr/share/X11/xorg.conf.d/40-libinput.conf
+        curl https://raw.githubusercontent.com/thehnm/autoarch/master/configs/40-libinput.conf > /usr/share/X11/xorg.conf.d/40-libinput.conf
     fi
 }
 

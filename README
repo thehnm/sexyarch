@@ -18,8 +18,8 @@ Script
 
 The next step after installing Arch Linux would be to download this script.
 
-    > git clone https://github.com/thehnm/tarbs
-    > cd tarbs
+    > git clone https://github.com/thehnm/autoarch
+    > cd autoarch
     > bash install.sh
 
 
