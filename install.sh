@@ -224,11 +224,16 @@ configurelibinput() {
     [ "$laptop" = 0 ] && return
     info "Configure touchpad for laptops"
     ln -s /usr/share/X11/xorg.conf.d/40-libinput.conf /etc/X11/xorg.conf.d/40-libinput.conf
-    if [ -f configs/40-libinput.conf ]; then
-        cp configs/40-libinput.conf /usr/share/X11/xorg.conf.d/40-libinput.conf
-    else
-        curl https://raw.githubusercontent.com/thehnm/autoarch/master/configs/40-libinput.conf > /usr/share/X11/xorg.conf.d/40-libinput.conf
-    fi
+
+    printf 'Section "InputClass"
+    Identifier "libinput touchpad catchall"
+    MatchIsTouchpad "on"
+    MatchDevicePath "/dev/input/event*"
+    Driver "libinput"
+    Option "Tapping" "on"
+	Option "NaturalScrolling" "true"
+	Option "DisableWhileTyping" "off"
+EndSection' > /usr/share/X11/xorg.conf.d/40-libinput.conf
 }
 
 install() {
