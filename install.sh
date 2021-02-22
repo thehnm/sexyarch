@@ -4,7 +4,7 @@
 [ -z ${editor+x} ] && editor="vim"
 [ -z ${grub+x} ] && grub=0
 [ -z ${editpackages+x} ] && editpackages=0
-[ -z ${islaptop+x} ] && islaptop=0
+[ -z ${laptop+x} ] && laptop=0
 
 ###############################################################################
 
@@ -221,7 +221,7 @@ gitinstall() {
 }
 
 configurelibinput() {
-    [ "$islaptop" = 0 ] && return
+    [ "$laptop" = 0 ] && return
     info "Configure touchpad for laptops"
     ln -s /usr/share/X11/xorg.conf.d/40-libinput.conf /etc/X11/xorg.conf.d/40-libinput.conf
     if [ -f configs/40-libinput.conf ]; then
@@ -239,7 +239,7 @@ install() {
         [ -d /sys/firmware/efi ] && printf ",efibootmgr,\"EFI Boot Manager\"" >> packages.csv
     fi
 
-    [ "$islaptop" = 1 ] && printf ",libinput,\"Input device management and event handling library\"" >> packages.csv
+    [ "$laptop" = 1 ] && printf ",libinput,\"Input device management and event handling library\"" >> packages.csv
 
     total=$(wc -l < packages.csv)
     total=$(( total - 1 )) # Remove header line
