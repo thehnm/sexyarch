@@ -47,9 +47,9 @@ yesnodialog() {
 }
 
 queue() {
-for command in "$@"; do
-    eval "$command"
-done
+    for command in "$@"; do
+        eval "$command"
+    done
 }
 
 ###############################################################################
