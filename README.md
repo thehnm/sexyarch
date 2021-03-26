@@ -1,30 +1,25 @@
-Installation Guide
-==================
+# Installation Guide
 
 This script will replicate my Arch Linux system configuration onto new machines.
-See my dotfiles (https://github.com/thehnm/dotfiles) for more information.
+See my [dotfiles](https://github.com/thehnm/dotfiles) for more information.
 
-
-Install Arch Linux Base System
-------------------------------
+## Install Arch Linux Base System
 
 Before you can use this script a basic Arch Linux installation is required since my script only configures an existing system.
-The Arch Linux Installation Guide (https://wiki.archlinux.org/index.php/Installation_guide) lists instructions for setting up a basic installation.
+The [Arch Linux Installation Guide](https://wiki.archlinux.org/index.php/Installation_guide) lists instructions for setting up a basic installation.
 However, this script will already configure some settings such as locales, timezones and networking.
 
-
-Script
-------
+## Script
 
 The next step after installing Arch Linux would be to download this script.
 
-    > git clone https://github.com/thehnm/autoarch
-    > cd autoarch
-    > bash install.sh
+```bash
+git clone https://github.com/thehnm/autoarch
+cd autoarch
+bash install.sh
+```
 
-
-What this script will do
-------------------------
+## What this script will do
 
 - Setup timezone
 - Setup locale
