@@ -19,6 +19,7 @@
 ,openssh,"Allows for establishing SSH connections"
 ,pulseaudio,"Primary used sound server"
 ,pulsemixer,"Utility for pulseaudio"
+,pamixer,"CLI mixer for pulseaudio"
 ,playerctl,"mpris media player controller for spotify, brave, ..."
 ,qt5ct,"QT5 configuration utility"
 ,gnome-themes-extra,"Adds additional gnome themes"
