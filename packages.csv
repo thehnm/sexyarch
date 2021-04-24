@@ -31,7 +31,7 @@
 ,zsh,"Primary interactive shell"
 ,scrot,"CLI screenshot utility"
 ,ttf-fira-code,"Primary monospace font"
-,ttf-linux-libertine,"Primary sans and serif fonts included"
+,libertinus-font,"Primary sans and serif fonts included"
 ,noto-fonts-cjk,"For non-latin fonts"
 ,ttf-joypixels,"Font for emojis"
 ,light,"Set background light"
