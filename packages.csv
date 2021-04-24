@@ -51,6 +51,7 @@
 ,transmission-cli,"BitTorrent client"
 ,rsync,"Remote copy tool"
 ,nextcloud-client,"File synchronization software"
+,picom,"X Compositor"
 A,brave-bin,"Primary browser"
 A,mutt-wizard-git,"Automatic neomutt configurator"
 A,tremc-git,"Curses interface for transmission-daemon"
