@@ -183,6 +183,11 @@ refreshkeys() {
     pacman --noconfirm -Sy archlinux-keyring &>/dev/null
 }
 
+singleinstall() {
+    info "Installing $1. $2"
+    pacman --noconfirm --needed -S "$1" &>/dev/null
+}
+
 pacmaninstall() {
     info "[$n/$total] $1. $2"
     pacman --noconfirm --needed -S "$1" &>/dev/null
