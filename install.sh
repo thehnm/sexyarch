@@ -46,12 +46,6 @@ yesnodialog() {
     done
 }
 
-queue() {
-    for command in "$@"; do
-        eval "$command"
-    done
-}
-
 ###############################################################################
 
 usage() {
@@ -381,27 +375,44 @@ cleanup() {
 
 trap cleanup INT SIGINT SIGTERM
 
-currentdir=$(pwd)
-
 clear
 
-queue "initialcheck" \
-      "usercheck" \
-      "getuserpass" \
-      "downloadandeditpackages" \
-      "adduserandpass" \
-      "newperms \"%wheel ALL=(ALL) NOPASSWD: ALL\"" \
-      "installyay || { err 'yay has to be installed to continue'; exit 1; }" \
-      "refreshkeys" \
-      "install" \
-      "configurelibinput" \
-      "installdotfiles" \
-      "installantibody" \
-      "newperms \"%wheel ALL=(ALL) ALL\n%wheel ALL=(ALL) NOPASSWD: /usr/bin/shutdown,/usr/bin/reboot,/usr/bin/systemctl suspend,/usr/bin/wifi-menu,/usr/bin/mount,/usr/bin/umount,/usr/bin/pacman -Syu,/usr/bin/pacman -Syyu,/usr/bin/packer -Syu,/usr/bin/packer -Syyu,/usr/bin/systemctl restart NetworkManager,/usr/bin/rc-service NetworkManager restart,/usr/bin/pacman -Syyu --noconfirm,/usr/bin/loadkeys,/usr/bin/yay\"" \
-      "serviceinit NetworkManager cronie ntpdate sshd" \
-      "miscellaneous" \
-      "settimezone" \
-      "genlocale" \
-      "sethostname" \
-      "installgrub" \
-      "succ 'Installation is done. You can reboot now'"
+initialcheck
+
+usercheck
+
+getuserpass
+
+downloadandeditpackages
+
+adduserandpass
+
+newperms "%wheel ALL=(ALL) NOPASSWD: ALL"
+
+installyay || { err 'yay has to be installed to continue'; exit 1; }
+
+refreshkeys
+
+install
+
+configurelibinput
+
+installdotfiles
+
+installantibody
+
+newperms "%wheel ALL=(ALL) ALL\n%wheel ALL=(ALL) NOPASSWD: /usr/bin/shutdown,/usr/bin/reboot,/usr/bin/systemctl suspend,/usr/bin/wifi-menu,/usr/bin/mount,/usr/bin/umount,/usr/bin/pacman -Syu,/usr/bin/pacman -Syyu,/usr/bin/packer -Syu,/usr/bin/packer -Syyu,/usr/bin/systemctl restart NetworkManager,/usr/bin/rc-service NetworkManager restart,/usr/bin/pacman -Syyu --noconfirm,/usr/bin/loadkeys,/usr/bin/yay"
+
+serviceinit NetworkManager cronie ntpdate sshd
+
+miscellaneous
+
+settimezone
+
+genlocale
+
+sethostname
+
+installgrub
+
+succ 'Installation is done. You can reboot now'
