@@ -222,6 +222,7 @@ gitinstall() {
 configurelibinput() {
     [ "$laptop" = 0 ] && return
     info "Configure touchpad for laptops"
+    pacman --noconfirm --needed -S libinput &>/dev/null
     ln -s /usr/share/X11/xorg.conf.d/40-libinput.conf /etc/X11/xorg.conf.d/40-libinput.conf
 
     printf 'Section "InputClass"
@@ -236,15 +237,6 @@ EndSection' > /usr/share/X11/xorg.conf.d/40-libinput.conf
 }
 
 install() {
-    if [ "$grub" = 1 ]; then
-        printf ",grub,\"Bootloader\"" >> packages.csv
-        printf ",os-prober,\"Detects other operating systems\"" >> packages.csv
-        printf ",ntfs-3g,\"Driver for detecting Windows partition\"" >> packages.csv
-        [ -d /sys/firmware/efi ] && printf ",efibootmgr,\"EFI Boot Manager\"" >> packages.csv
-    fi
-
-    [ "$laptop" = 1 ] && printf ",libinput,\"Input device management and event handling library\"" >> packages.csv
-
     total=$(wc -l < packages.csv)
     total=$(( total - 1 )) # Remove header line
     while IFS=, read -r tag program comment; do
@@ -350,19 +342,25 @@ sethostname() {
 
 installgrub() {
     [ "$grub" = 0 ] && return
+
+    singleinstall grub "Bootloader"
+    singleinstall os-prober "Detects other operating systems"
+    singleinstall ntfs-3g "Driver for detecting Windows partition"
+
     if [ -d /sys/firmware/efi ]; then
+        singleinstall efibootmgr "EFI Boot Manager"
         [ ! -d $efidir ] && { info "Creating EFI dir"; mkdir -p "$efidir" &>/dev/null; }
 
         info "Mounting partition \'$efipart\' to \'$efidir\'"
         mount $efipart $efidir &>/dev/null
 
-        info "Installing GRUB"
+        info "Setting up GRUB"
         grub-install --efi-directory="$efidir" --bootloader-id=GRUB --target=x86_64-efi &>/dev/null
     else
         part="$(df -h | grep -e "/$" | cut -d ' ' -f1)"
         part=${part%?}
 
-        info "Installing GRUB"
+        info "Setting up GRUB"
         grub-install "$part" &>/dev/null
     fi
 
