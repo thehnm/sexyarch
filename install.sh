@@ -27,7 +27,11 @@ succ() {
 }
 
 info() {
-    printf "> $1\n"
+    printf "# $1\n"
+}
+
+info2() {
+    printf "  * $1\n"
 }
 
 warn() {
@@ -189,12 +193,12 @@ singleinstall() {
 }
 
 pacmaninstall() {
-    info "[$n/$total] $1. $2"
+    info2 "[$n/$total] $1. $2"
     pacman --noconfirm --needed -S "$1" &>/dev/null
 }
 
 aurinstall() {
-    info "[$n/$total] $1. $2"
+    info2 "[$n/$total] $1. $2"
     yes | sudo -u $name yay --noconfirm -S "$1" &>/dev/null
 }
 
@@ -250,8 +254,9 @@ install() {
 }
 
 serviceinit() {
+    info "Enable services"
     for service in "$@"; do
-        info "Enabling \"$service\""
+        info2 "Enabling \"$service\""
         systemctl enable "$service" &>/dev/null
         systemctl start "$service" &>/dev/null
     done
