@@ -188,7 +188,7 @@ refreshkeys() {
 }
 
 singleinstall() {
-    info "Installing $1. $2"
+    info2 "Installing $1. $2"
     pacman --noconfirm --needed -S "$1" &>/dev/null
 }
 
