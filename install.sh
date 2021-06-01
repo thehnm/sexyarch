@@ -133,19 +133,23 @@ Options:
         Edit the package list before installing the system.
     -l, --locale $(bold locale)
         Set system locale, e.g. en_US.
+    -n, --host $(bold host)
+        Set the hostname of this system.
     -z, --zone $(bold timezone)
         Set timezone of the system, e.g. Europe/London.
     -t, --touchpad
         Install necessary dependencies for activating the touchpad on laptops.
     -e, --editor $(bold editor)
-        Set the editor to use when editing files. Default: $(bold vim)"
+        Set the editor to use when editing files. Default: $(bold vim)
+    -h, --help
+        Print usage information.\n"
 }
 
 ###############################################################################
 
 trap 'cleanup' INT SIGINT SIGTERM ERR KILL
 
-options=$(getopt -o f:pl:z:h:u:te: \
+options=$(getopt -o f:pl:z:n:u:te:h \
                  --long fullinstall: \
                  --long packageedit \
                  --long locale: \
@@ -154,6 +158,7 @@ options=$(getopt -o f:pl:z:h:u:te: \
                  --long user: \
                  --long touchpad \
                  --long editor: \
+                 --long help \
                  -- "$@")
 
 [ $? -eq 0 ] || {
@@ -184,7 +189,7 @@ while true; do
             [ ! -e /usr/share/zoneinfo/"$1" ] && err "Timezone \'$1\' not found. Check if it is correctly spelled, e.g. Europe/London" && exit 1
             zone=$1
             ;;
-        -h|--host)
+        -n|--host)
             shift
             host=$1
             ;;
@@ -201,6 +206,10 @@ while true; do
             shift
             [ -z "$(builtin type -p $1)" ] && err "Editor \'$1\' not found" && exit 1
             editor=$1
+            ;;
+        -h|--help)
+            usage
+            exit 1
             ;;
         --)
             shift
