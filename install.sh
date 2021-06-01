@@ -258,7 +258,8 @@ if [ $fullinstall ]; then
         mainpart="${part}2"
         mkfs.vfat -F32 "${part}1"
     else
-        parted -s "$part" -- mklabel gpt mkpart primary ext4 1MiB 100%
+        parted -s "$part" -- mklabel msdos \
+            mkpart primary ext4 1MiB 100%
         mainpart="${part}1"
     fi
 
