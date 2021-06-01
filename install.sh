@@ -213,11 +213,8 @@ done
 
 info "Initial check"
 [ -z "$name" ] && err "Username not set" && exit 1
-pacman -S --noconfirm --needed git &>/dev/null || { err "You are not running this script as root."; exit 1; }
 
 clear
-
-! (id -u $name &>/dev/null) || warn "User \'$name\' already exits.\nThe following steps will overwrite the user's password and settings"
 
 read -s -p "Create password for $name: " pass1
 printf "\n"
@@ -289,6 +286,8 @@ if [ $fullinstall ]; then
     printf "LANG=$locale.UTF-8\n" > /mnt/etc/locale.conf
     printf "LC_ALL=$locale.UTF-8\n" >> /mnt/etc/locale.conf
 fi
+
+! (arch-chroot /mnt id -u $name &>/dev/null) || warn "User \'$name\' already exits.\nThe following steps will overwrite the user's password and settings"
 
 arch-chroot /mnt useradd -mU -s /usr/bin/zsh -G wheel,uucp,video,audio,storage,games,input "$name"
 arch-chroot /mnt chsh -s /usr/bin/zsh
