@@ -173,7 +173,7 @@ while true; do
         -f|--fullinstall)
             fullinstall=1
             shift
-            [ ! -f "$1" ] && err "Disk $1 not found. Check if it is correctly spelled, e.g. /dev/sda" && exit 1
+            [ ! -e "$1" ] && err "Disk $1 not found. Check if it is correctly spelled, e.g. /dev/sda" && exit 1
             part=$1
             ;;
         -p|--packageedit)
