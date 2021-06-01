@@ -2,9 +2,6 @@
 
 [ -z ${dotfilesrepo+x} ] && dotfilesrepo="https://github.com/thehnm/dotfiles.git"
 [ -z ${editor+x} ] && editor="vim"
-[ -z ${grub+x} ] && grub=0
-[ -z ${editpackages+x} ] && editpackages=0
-[ -z ${laptop+x} ] && laptop=0
 
 ###############################################################################
 
@@ -12,11 +9,13 @@
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 ORANGE='\033[0;33m'
-PURPLE='\033[0;35m'
-CYAN='\033[1;36m'
 NC='\033[0m' # No Color
 BOLD=$(tput bold)
 NORMAL=$(tput sgr0)
+
+bold() {
+    printf "${BOLD}$1${NORMAL}"
+}
 
 err() {
     printf "${RED}$1${NC}\n"
@@ -39,176 +38,46 @@ warn() {
     yesnodialog "${ORANGE}Do you really want to continue?${NC}" "" "exit 1"
 }
 
-yesnodialog() {
-    while true; do
-        read -p "$(printf "$1 (y|n) ")" yn
-        case $yn in
-            y ) eval $2; break;;
-            n ) eval $3; break;;
-            * ) err "Please answer yes (y) or no (n).";;
-        esac
-    done
-}
-
-###############################################################################
-
-usage() {
-    printf "\n"
-    printf "Usage: install.sh -u username [-hgdpltne]\n\n"
-    printf "To simply install my dotfiles without configuring a full Arch Linux system:\n\n"
-    printf "> ./install.sh -u username\n\n"
-    printf "Required Arguments\n"
-    printf "  -u username\n"
-    printf "     Set user name\n\n"
-    printf "Optional Arguments\n"
-    printf "  -h Display help\n"
-    printf "  -e editor\n"
-    printf "     Choose another editor (default: $editor)\n"
-    printf "  -f Edit the packages file (default: no)\n"
-    printf "  -g Install GRUB bootloader (default: no)\n"
-    printf "  -d directory\n"
-    printf "     Specify EFI boot directory. Needed when installing GRUB\n"
-    printf "  -p partition\n"
-    printf "     Specify EFI boot partition. Needed when installing GRUB\n"
-    printf "  -l locale\n"
-    printf "     Set locale, e.g. en_US\n"
-    printf "  -t timezone\n"
-    printf "     Set timezone, e.g. Europe/London\n"
-    printf "  -n hostname\n"
-    printf "     Set hostname\n"
-}
-
-while getopts "u:hgd:p:l:t:n:fe:" arg; do
-    case "${arg}" in
-        u) name=$OPTARG ;;
-        h) usage; exit 0 ;;
-        g) grub=1 ;;
-        d) efidir=$OPTARG ;;
-        p) efipart=$OPTARG ;;
-        l) locale=$OPTARG ;;
-        t) timezone=$OPTARG ;;
-        n) hostname=$OPTARG ;;
-        f) editpackages=1 ;;
-        e) editor=$OPTARG ;;
-        ?) printf "Invalid option: -${OPTARG}.\n\n"; usage; exit 1 ;;
-        :) printf "Invalid Option: -$OPTARG requires an argument\n\n"; usage; exit 1;;
-    esac
-done
-
-[ -z ${name+x} ] && { err "Username [-u] has to be set!"; exit 1; }
-shift $((OPTIND -1))
-
-###############################################################################
-
-initialcheck() {
-    info "Initial check"
-    pacman -S --noconfirm --needed git &>/dev/null || { err "You are not running this script as root."; exit 1; }
-
-    namere="^[a-z_][a-z0-9_-]*$"
-    ! [[ "${name}" =~ ${namere} ]] && err "Username not valid!" && exit 1
-
-    [ -z "$(builtin type -p $editor)" ] && err "Editor \'${editor}\' not found" && exit 1
-
-    # Check if all necessary variables for GRUB installation are correctly set
-    if [ "$grub" = 1 -a -d /sys/firmware/efi ]; then
-        [ -z ${efidir+x} ] && { err "Installation on UEFI system. EFI directory not set."; exit 1; }
-        [ -z ${efipart+x} ] && { err "Installation on UEFI system. EFI partition not set."; exit 1; }
-
-        [ -z "$(blkid | grep "$efipart")" ] && { err "Partition "" does not exist!"; exit 1; } # Check if partition exists
-        [ -z "$(blkid $efipart| grep -E -- "fat|vfat")" ] && { err "Partition is not a FAT32 partition!"; exit 1; } # Check if FAT
-
-        mountpoint=$(df -h | grep $efipart | rev | cut -d ' ' -f1 | rev)
-        [ -n "$mountpoint" ] && [ "$mountpoint" != "$efidir" ] && err "Partition \'$efipart\' is already mounted elsewhere" && exit 1
-    fi
-
-    [ -n "${timezone}" ] && [ ! -e /usr/share/zoneinfo/"$timezone" ] && err "Timezone \'$timezone\' not found. Check if it is correctly spelled, e.g. Europe/London" && exit 1
-
-    [ -n "${locale}" ] && [ -z "$(grep $locale /etc/locale.gen)" ] && err "Locale \'$locale\' not found. Check if it is correctly spelled, e.g. en_US" && exit 1
-
-    hostre="^[a-z0-9][a-z0-9.-_]*$"
-    [ -n "${hostname}" ] && ! [[ "${hostname}" =~ ${hostre} ]] && err "Hostname \'$hostname\' not valid" && exit 1
-}
-
-usercheck() {
-    ! (id -u $name &>/dev/null) || warn "User \'$name\' already exits.\nThe following steps will overwrite the user's password and settings"
-}
-
-getuserpass() {
-    read -s -p "Enter password for $name: " pass1
-    printf "\n"
-    read -s -p "Reenter password for $name: " pass2
-    printf "\n"
-
-    while ! [[ ${pass1} == ${pass2} ]]; do
-        unset pass1 pass2
-        err "Passwords do not match. Please enter your password again"
-        read -s -p "Enter password for $name: " pass1
-        read -s -p "Reenter password for $name: " pass2
-    done
-}
-
-downloadandeditpackages() {
-    [ ! -f packages.csv ] && info "Downloading packages file" && curl https://raw.githubusercontent.com/thehnm/autoarch/master/packages.csv > packages.csv
-    [ "$editpackages" = 1 ] && $editor packages.csv && clear
-}
-
-adduserandpass() {
-    # Adds user `$name` with password $pass1.
-    info "Add user \'$name\'"
-    useradd -m -g wheel -s /bin/zsh "$name" &>/dev/null ||
-    usermod -a -G wheel "$name" && mkdir -p /home/"$name" && chown "$name":wheel /home/"$name"
-    usermod -a -G video "$name"
-    repodir="/home/$name/.local/src"; mkdir -p "$repodir"; chown -R "$name":wheel $(dirname "$repodir")
-    printf "$name:$pass1" | chpasswd
-    unset pass1 pass2 ;
-}
-
 newperms() {
     # Set special sudoers settings for install (or after).
     info "Setting sudoers"
-    sed -i "/#SCRIPT/d" /etc/sudoers
-    printf "%b #SCRIPT\n" "$@" >> /etc/sudoers
+    sed -i "/#SCRIPT/d" /mnt/etc/sudoers
+    printf "%b #SCRIPT\n" "$@" >> /mnt/etc/sudoers
 }
 
-installyay() {
-    info "Installing yay"
-    if [ ! -f /usr/bin/yay ]; then
-        pacman --noconfirm -S git &>/dev/null
-        sudo -u $name git clone https://aur.archlinux.org/yay.git /tmp/yay &>/dev/null
+createyayscript() {
+    printf "if [ ! -f /usr/bin/yay ]; then
+    pacman --noconfirm -S git &>/dev/null
+    sudo -u $name git clone https://aur.archlinux.org/yay.git /tmp/yay &>/dev/null
     (
         cd /tmp/yay
         sudo -u $name makepkg --noconfirm -si &>/dev/null
     )
-    fi
-}
-
-refreshkeys() {
-    info "Refreshing Arch Linux Keyring"
-    pacman --noconfirm -Sy archlinux-keyring &>/dev/null
+fi" > /mnt/installyay.sh
 }
 
 singleinstall() {
     info2 "Installing $1. $2"
-    pacman --noconfirm --needed -S "$1" &>/dev/null
+    arch-chroot /mnt pacman --noconfirm --needed -S "$1" &>/dev/null
 }
 
 pacmaninstall() {
     info2 "[$n/$total] $1. $2"
-    pacman --noconfirm --needed -S "$1" &>/dev/null
+    arch-chroot /mnt pacman --noconfirm --needed -S "$1" &>/dev/null
 }
 
 aurinstall() {
     info2 "[$n/$total] $1. $2"
-    yes | sudo -u $name yay --noconfirm -S "$1" &>/dev/null
+    arch-chroot /mnt sudo -u $name yay --noconfirm -S "$1" &>/dev/null
 }
 
 putgitrepo() { # Downloads a gitrepo $1 and places the files in $2 only overwriting conflicts
     [ -z "$3" ] && branch="master" || branch="$3"
-    tempdir=$(mktemp -d)
-    [ ! -d "$2" ] && mkdir -p "$2"
-    chown -R "$name":wheel "$tempdir" "$2"
-    sudo -u "$name" git clone --recursive -b "$branch" --depth 1 "$1" "$tempdir" >/dev/null 2>&1
-    sudo -u "$name" cp -rfT "$tempdir" "$2"
+    tempdir=$(arch-chroot /mnt mktemp -d)
+    [ ! -d "/mnt/$2" ] && mkdir -p "/mnt/$2"
+    arch-chroot /mnt chown -R "$name":wheel "$tempdir" "$2"
+    arch-chroot /mnt sudo -u "$name" git clone --recursive -b "$branch" --depth 1 "$1" "$tempdir" >/dev/null 2>&1
+    arch-chroot /mnt sudo -u "$name" cp -rfT "$tempdir" "$2"
 }
 
 # Requires the git repository to have some kind of build file/Makefile
@@ -217,27 +86,7 @@ gitinstall() {
     dir="$repodir/$progname"
     info "[$n/$total] $1. $2"
     putgitrepo "$1" "$dir"
-    (
-        cd "$dir" || exit
-        make install >/dev/null 2>&1
-    )
-}
-
-configurelibinput() {
-    [ "$laptop" = 0 ] && return
-    info "Configure touchpad for laptops"
-    pacman --noconfirm --needed -S libinput &>/dev/null
-    ln -s /usr/share/X11/xorg.conf.d/40-libinput.conf /etc/X11/xorg.conf.d/40-libinput.conf
-
-    printf 'Section "InputClass"
-    Identifier "libinput touchpad catchall"
-    MatchIsTouchpad "on"
-    MatchDevicePath "/dev/input/event*"
-    Driver "libinput"
-    Option "Tapping" "on"
-	Option "NaturalScrolling" "true"
-	Option "DisableWhileTyping" "off"
-EndSection' > /usr/share/X11/xorg.conf.d/40-libinput.conf
+    arch-chroot /mnt bash -c "cd /mnt/$dir && make install >/dev/null 2>&1"
 }
 
 install() {
@@ -257,119 +106,8 @@ serviceinit() {
     info "Enable services"
     for service in "$@"; do
         info2 "Enabling \"$service\""
-        systemctl enable "$service" &>/dev/null
-        systemctl start "$service" &>/dev/null
+        arch-chroot /mnt systemctl enable "$service" &>/dev/null
     done
-}
-
-installantibody() {
-    info "Install antibody zsh plugin manager"
-    sudo -u $name curl -sfL git.io/antibody | sh -s - -b /home/$name/.local/bin/ &>/dev/null
-}
-
-installdotfiles() {
-    info "Installing dotfiles"
-(
-    putgitrepo "$dotfilesrepo" "/home/$name"
-    cd /home/"$name" && sudo -u "$name" git config --local status.showUntrackedFiles no
-)
-}
-
-systembeepoff() {
-    info "Disabling beep sound"
-    rmmod pcspkr
-    printf "blacklist pcspkr\n" > /etc/modprobe.d/nobeep.conf
-}
-
-resetpulse() { \
-    info "Resetting Pulseaudio"
-    killall pulseaudio &>/dev/null
-    sudo -u "$name" pulseaudio --start
-}
-
-miscellaneous() {
-    info "Setting miscellaneous stuff"
-
-    ln -sf /usr/bin/dash /bin/sh
-
-    systembeepoff
-
-    # Pulseaudio, if/when initially installed, often needs a restart to work immediately.
-    [[ -f /usr/bin/pulseaudio ]] && resetpulse
-
-    # Color pacman
-    sed -i "s/^#Color/Color/g" /etc/pacman.conf
-    # Fix audio problem
-    sed -i 's/^ autospawn/; autospawn/g' /etc/pulse/client.conf
-
-    # Create configuration directories
-    sudo -u "$name" mkdir -p /home/"$name"/.config/zsh ## Stores the zshrc
-    sudo -u "$name" mkdir -p /home/"$name"/.local/share/zsh ## Stores history file for zsh
-    sudo -u "$name" mkdir -p /home/"$name"/.config/notmuch ## Required by mutt-wizard
-    sudo -u "$name" mkdir -p /home/"$name"/.config/newsboat ## Stores newsboat config
-    sudo -u "$name" mkdir -p /home/"$name"/.local/share/newsboat ## Stores the cache and history file
-
-    # Create XDG user directories
-    sudo -u "$name" mkdir -p /home/"$name"/dl # Download directory
-    sudo -u "$name" mkdir -p /home/"$name"/docs
-    sudo -u "$name" mkdir -p /home/"$name"/music
-    sudo -u "$name" mkdir -p /home/"$name"/pics
-}
-
-settimezone() {
-    [ -z ${timezone+x} ] && return
-
-    info "Setting timezone"
-    ln -sf /usr/share/zoneinfo/"$timezone" /etc/localtime &>/dev/null
-    hwclock --systohc
-}
-
-genlocale() {
-    [ -z ${locale+x} ] && return
-
-    info "Generating locale"
-    sed -i "s/\#$locale/$locale/" /etc/locale.gen
-    locale-gen &>/dev/null
-    info "Setting locale"
-    printf "LANG=$locale.UTF-8\n" > /etc/locale.conf
-    printf "LC_ALL=$locale.UTF-8\n" >> /etc/locale.conf
-}
-
-sethostname() {
-    [ -z ${hostname+x} ] && return
-
-    info "Setting hostname"
-    printf "$hostname\n" > /etc/hostname
-    printf "127.0.0.1 localhost\n" > /etc/hosts
-    printf "::1 localhost\n" >> /etc/hosts
-    printf "127.0.1.1 $hostname.localdomain $hostname\n" >> /etc/hosts
-}
-
-installgrub() {
-    [ "$grub" = 0 ] && return
-
-    singleinstall grub "Bootloader"
-    singleinstall os-prober "Detects other operating systems"
-    singleinstall ntfs-3g "Driver for detecting Windows partition"
-
-    if [ -d /sys/firmware/efi ]; then
-        singleinstall efibootmgr "EFI Boot Manager"
-        [ ! -d $efidir ] && { info "Creating EFI dir"; mkdir -p "$efidir" &>/dev/null; }
-
-        info "Mounting partition \'$efipart\' to \'$efidir\'"
-        mount $efipart $efidir &>/dev/null
-
-        info "Setting up GRUB"
-        grub-install --efi-directory="$efidir" --bootloader-id=GRUB --target=x86_64-efi &>/dev/null
-    else
-        part="$(df -h | grep -e "/$" | cut -d ' ' -f1)"
-        part=${part%?}
-
-        info "Setting up GRUB"
-        grub-install "$part" &>/dev/null
-    fi
-
-    grub-mkconfig -o /boot/grub/grub.cfg &>/dev/null
 }
 
 cleanup() {
@@ -379,48 +117,257 @@ cleanup() {
     exit 1
 }
 
+usage() {
+    printf "\
+Usage: bash install.sh -u $(bold name)
+Usage: bash install.sh --user $(bold name)
+
+Options:
+    -u, --user $(bold username)
+        Set the username. Mandatory option.
+    -f, --fullinstall $(bold disk)
+        Install a full system. Specify a $(bold disk) to install the system.
+        If not set, then the options (-l|--locale), (-z|--zone) and (-h|--host)
+        will be ignored even if they are set.
+    -p, --packageedit
+        Edit the package list before installing the system.
+    -l, --locale $(bold locale)
+        Set system locale, e.g. en_US.
+    -z, --zone $(bold timezone)
+        Set timezone of the system, e.g. Europe/London.
+    -t, --touchpad
+        Install necessary dependencies for activating the touchpad on laptops.
+    -e, --editor $(bold editor)
+        Set the editor to use when editing files. Default: $(bold vim)"
+}
+
 ###############################################################################
 
-trap cleanup INT SIGINT SIGTERM
+trap 'cleanup' INT SIGINT SIGTERM ERR KILL
+
+options=$(getopt -o f:pl:z:h:u:te: \
+                 --long fullinstall: \
+                 --long packageedit \
+                 --long locale: \
+                 --long zone: \
+                 --long host: \
+                 --long user: \
+                 --long touchpad \
+                 --long editor: \
+                 -- "$@")
+
+[ $? -eq 0 ] || {
+    printf "Incorrect options provided\n\n"
+    usage
+    exit 1
+}
+
+eval set -- "$options"
+while true; do
+    case "$1" in
+        -f|--fullinstall)
+            fullinstall=1
+            shift
+            [ ! -f "$1" ] && err "Disk $1 not found. Check if it is correctly spelled, e.g. /dev/sda" && exit 1
+            part=$1
+            ;;
+        -p|--packageedit)
+            packageedit=1
+            ;;
+        -l|--locale)
+            shift
+            [ -z "$(grep $1 /etc/locale.gen)" ] && err "Locale \'$1\' not found. Check if it is correctly spelled, e.g. en_US" && exit 1
+            locale=$1
+            ;;
+        -z|--zone)
+            shift
+            [ ! -e /usr/share/zoneinfo/"$1" ] && err "Timezone \'$1\' not found. Check if it is correctly spelled, e.g. Europe/London" && exit 1
+            zone=$1
+            ;;
+        -h|--host)
+            shift
+            host=$1
+            ;;
+        -u|--user)
+            shift
+            namere="^[a-z_][a-z0-9_-]*$"
+            ! [[ "$1" =~ ${namere} ]] && err "Username not valid!" && exit 1
+            name=$1
+            ;;
+        -t|--touchpad)
+            touchpad=1
+            ;;
+        -e|--editor)
+            shift
+            [ -z "$(builtin type -p $1)" ] && err "Editor \'$1\' not found" && exit 1
+            editor=$1
+            ;;
+        --)
+            shift
+            break
+            ;;
+    esac
+
+    shift
+done
+
+info "Initial check"
+[ -z "$name" ] && err "Username not set" && exit 1
+pacman -S --noconfirm --needed git &>/dev/null || { err "You are not running this script as root."; exit 1; }
 
 clear
 
-initialcheck
+! (id -u $name &>/dev/null) || warn "User \'$name\' already exits.\nThe following steps will overwrite the user's password and settings"
 
-usercheck
+read -s -p "Create password for $name: " pass1
+printf "\n"
+read -s -p "Reenter password for $name: " pass2
+printf "\n"
+while ! [[ $pass1 == $pass2 ]]; do
+    unset pass1 pass2
+    err "Passwords do not match. Please enter your password again"
+    read -s -p "Create password for $name: " pass1
+    printf "\n"
+    read -s -p "Reenter password for $name: " pass2
+    printf "\n"
+done
 
-getuserpass
+[ ! -f packages.csv ] && info "Downloading packages file" && curl https://raw.githubusercontent.com/thehnm/autoarch/master/packages.csv > packages.csv
+[ $packageedit ] && $editor packages.csv && clear
 
-downloadandeditpackages
+if [ $fullinstall ]; then
+    [ -d /sys/firmware/efi ] && uefi=1
+    if [ $(ls ${part}* | wc -l) -gt 1 ]; then
+        err "Please delete old partitions from $(bold $part)"
+        cleanup
+        exit 1
+    fi
 
-adduserandpass
+    if [ $uefi ]; then
+        parted -s "$part" -- mklabel gpt \
+            mkpart ESP fat32 1MiB 512MiB \
+            set 1 boot on \
+            mkpart primary ext4 512MiB 100%
+
+        mainpart="${part}2"
+        mkfs.vfat -F32 "${part}1"
+    else
+        parted -s "$part" -- mklabel gpt mkpart primary ext4 1MiB 100%
+        mainpart="${part}1"
+    fi
+
+    mkfs.ext4 "$mainpart"
+    mount "$mainpart" /mnt
+
+    pacstrap /mnt base base-devel linux linux-firmware vi vim man zsh
+
+    genfstab -Up /mnt > /mnt/etc/fstab
+
+    [ $uefi ] && mkdir -p /mnt/boot/efi && mount "${part}1" /mnt/boot/efi
+
+    info "Install bootloader"
+    singleinstall grub "Bootloader"
+    singleinstall os-prober "Detects other operating systems"
+    singleinstall ntfs-3g "Driver for detecting Windows partition"
+    if [ $uefi ]; then
+        singleinstall efibootmgr "EFI Boot Manager"
+        mount "${part}1" /mnt/boot/efi
+        arch-chroot /mnt grub-install --efi-directory="/boot/efi" --bootloader-id=GRUB --target=x86_64-efi &>/dev/null
+    else
+        arch-chroot /mnt grub-install "${part}" &>/dev/null
+    fi
+    arch-chroot /mnt grub-mkconfig -o /boot/grub/grub.cfg &>/dev/null
+    arch-chroot /mnt ln -sf /usr/share/zoneinfo/"$zone" /etc/localtime
+
+    printf "$host" > /mnt/etc/hostname
+    printf "127.0.0.1   localhost\n" > /mnt/etc/hosts
+    printf "::1         localhost\n" > /mnt/etc/hosts
+    printf "127.0.1.1   $host.localdomain     $host" > /mnt/etc/hosts
+
+    sed -i "s/\#$locale/$locale/" /mnt/etc/locale.gen
+    arch-chroot /mnt locale-gen &>/dev/null
+    printf "LANG=$locale.UTF-8\n" > /mnt/etc/locale.conf
+    printf "LC_ALL=$locale.UTF-8\n" >> /mnt/etc/locale.conf
+fi
+
+arch-chroot /mnt useradd -mU -s /usr/bin/zsh -G wheel,uucp,video,audio,storage,games,input "$name"
+arch-chroot /mnt chsh -s /usr/bin/zsh
+repodir="/home/$name/.local/src"
+arch-chroot /mnt sudo -u "$name" mkdir -p "$repodir"
+
+printf "$name:$pass1" | chpasswd --root /mnt
+unset pass1 pass2
 
 newperms "%wheel ALL=(ALL) NOPASSWD: ALL"
 
-installyay || { err 'yay has to be installed to continue'; exit 1; }
+info "Install yay AUR helper"
+printf "\
+if [ ! -f /usr/bin/yay ]; then
+    pacman --noconfirm -S git &>/dev/null
+    sudo -u $name git clone https://aur.archlinux.org/yay.git /tmp/yay &>/dev/null
+    (
+        cd /tmp/yay
+        sudo -u $name makepkg --noconfirm -si &>/dev/null
+    )
+fi" > /mnt/installyay.sh
+arch-chroot /mnt bash installyay.sh
 
-refreshkeys
+arch-chroot /mnt pacman --noconfirm -Sy archlinux-keyring
 
 install
 
-configurelibinput
+info "Installing dotfiles"
+putgitrepo "$dotfilesrepo" "/home/$name"
+arch-chroot /mnt bash -c "cd /home/$name && sudo -u $name git config --local status.showUntrackedFiles no"
 
-installdotfiles
+info "Install antibody zsh plugin manager"
+arch-chroot /mnt bash -c "sudo -u $name curl -sfL git.io/antibody | sh -s - -b /home/$name/.local/bin/ &>/dev/null"
 
-installantibody
+info "Set dash shell"
+arch-chroot ln -sf /usr/bin/dash /bin/sh
 
+info "Disabling beep sound"
+arch-chroot /mnt rmmod pcspkr
+printf "blacklist pcspkr\n" > /mnt/etc/modprobe.d/nobeep.conf
+
+if [ -f /mnt/usr/bin/pulseaudio ]; then
+    info "Restart pulseaudio"
+    arch-chroot /mnt killall pulseaudio &>/dev/null
+    arch-chroot /mnt sudo -u "$name" pulseaudio --start
+fi
+
+info "Enable pacman colors"
+sed -i "s/^#Color/Color/g" /mnt/etc/pacman.conf
+
+info "Enable autospawn in pulseaudio"
+sed -i 's/^ autospawn/; autospawn/g' /mnt/etc/pulse/client.conf
+
+info "Create user directories"
+arch-chroot /mnt sudo -u "$name" mkdir -p /home/"$name"/.config/zsh ## Stores the zshrc
+arch-chroot /mnt sudo -u "$name" mkdir -p /home/"$name"/.local/share/zsh ## Stores history file for zsh
+arch-chroot /mnt sudo -u "$name" mkdir -p /home/"$name"/.config/notmuch ## Required by mutt-wizard
+arch-chroot /mnt sudo -u "$name" mkdir -p /home/"$name"/.config/newsboat ## Stores newsboat config
+arch-chroot /mnt sudo -u "$name" mkdir -p /home/"$name"/.local/share/newsboat ## Stores the cache and history file
+arch-chroot /mnt sudo -u "$name" mkdir -p /home/"$name"/{dl, docs, music, pics}
+
+info "Setting permissions"
 newperms "%wheel ALL=(ALL) ALL\n%wheel ALL=(ALL) NOPASSWD: /usr/bin/shutdown,/usr/bin/reboot,/usr/bin/systemctl suspend,/usr/bin/wifi-menu,/usr/bin/mount,/usr/bin/umount,/usr/bin/pacman -Syu,/usr/bin/pacman -Syyu,/usr/bin/packer -Syu,/usr/bin/packer -Syyu,/usr/bin/systemctl restart NetworkManager,/usr/bin/rc-service NetworkManager restart,/usr/bin/pacman -Syyu --noconfirm,/usr/bin/loadkeys,/usr/bin/yay"
 
 serviceinit NetworkManager cronie ntpdate sshd
 
-miscellaneous
-
-settimezone
-
-genlocale
-
-sethostname
-
-installgrub
+if [ $touchpad ]; then
+    info "Configure touchpad for laptops"
+    singleinstall libinput "Input device management library"
+    ln -s /mnt/usr/share/X11/xorg.conf.d/40-libinput.conf /mnt/etc/X11/xorg.conf.d/40-libinput.conf
+    printf 'Section "InputClass"
+        Identifier "libinput touchpad catchall"
+        MatchIsTouchpad "on"
+        MatchDevicePath "/dev/input/event*"
+        Driver "libinput"
+        Option "Tapping" "on"
+        Option "NaturalScrolling" "true"
+        Option "DisableWhileTyping" "off"
+    EndSection' > /mnt/usr/share/X11/xorg.conf.d/40-libinput.conf
+fi
 
 succ 'Installation is done. You can reboot now'
