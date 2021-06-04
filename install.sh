@@ -73,11 +73,13 @@ aurinstall() {
 
 putgitrepo() { # Downloads a gitrepo $1 and places the files in $2 only overwriting conflicts
     [ -z "$3" ] && branch="master" || branch="$3"
-    tempdir=$(arch-chroot /mnt mktemp -d)
+    tempdir=/gittemp
+    mkdir -p /mnt/"$tempdir"
     [ ! -d "/mnt/$2" ] && mkdir -p "/mnt/$2"
     arch-chroot /mnt chown -R "$name":wheel "$tempdir" "$2"
     arch-chroot /mnt sudo -u "$name" git clone --recursive -b "$branch" --depth 1 "$1" "$tempdir" >/dev/null 2>&1
     arch-chroot /mnt sudo -u "$name" cp -rfT "$tempdir" "$2"
+    rm -rf /mnt/"$tempdir"
 }
 
 # Requires the git repository to have some kind of build file/Makefile
