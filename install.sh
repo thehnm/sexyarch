@@ -88,7 +88,7 @@ gitinstall() {
     dir="$repodir/$progname"
     info "[$n/$total] $1. $2"
     putgitrepo "$1" "$dir"
-    arch-chroot /mnt bash -c "cd /mnt/$dir && make install >/dev/null 2>&1"
+    arch-chroot /mnt bash -c "cd $dir && make install >/dev/null 2>&1"
 }
 
 install() {
