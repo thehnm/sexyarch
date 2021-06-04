@@ -86,7 +86,7 @@ putgitrepo() { # Downloads a gitrepo $1 and places the files in $2 only overwrit
 gitinstall() {
     progname="$(basename "$1" .git)"
     dir="$repodir/$progname"
-    info "[$n/$total] $1. $2"
+    info2 "[$n/$total] $1. $2"
     putgitrepo "$1" "$dir"
     arch-chroot /mnt bash -c "cd $dir && make install >/dev/null 2>&1"
 }
