@@ -335,7 +335,7 @@ info "Install antibody zsh plugin manager"
 arch-chroot /mnt bash -c "sudo -u $name curl -sfL git.io/antibody | sh -s - -b /home/$name/.local/bin/ &>/dev/null"
 
 info "Set dash shell"
-ln -sf /mnt/usr/bin/dash /mnt/bin/sh
+ln -sf /usr/bin/dash /mnt/bin/sh
 
 info "Disabling beep sound"
 arch-chroot /mnt rmmod pcspkr &>/dev/null
