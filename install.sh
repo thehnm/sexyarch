@@ -150,7 +150,7 @@ Options:
 
 ###############################################################################
 
-trap 'cleanup' ERR KILL
+trap 'cleanup' SIGINT SIGTERM KILL
 
 options=$(getopt -o f:pl:z:n:u:te:h \
                  --long fullinstall: \
