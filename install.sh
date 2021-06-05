@@ -149,7 +149,7 @@ Options:
 
 ###############################################################################
 
-trap 'cleanup' INT SIGINT SIGTERM ERR KILL
+trap 'cleanup' ERR KILL
 
 options=$(getopt -o f:pl:z:n:u:te:h \
                  --long fullinstall: \
