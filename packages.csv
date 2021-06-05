@@ -51,6 +51,7 @@
 ,rsync,"Remote copy tool"
 ,nextcloud-client,"File synchronization software"
 ,picom,"X Compositor"
+,fzf,"Fuzzy File Finder"
 A,brave-bin,"Primary browser"
 A,mutt-wizard-git,"Automatic neomutt configurator"
 A,tremc-git,"Curses interface for transmission-daemon"
