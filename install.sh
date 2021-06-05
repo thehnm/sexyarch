@@ -337,7 +337,7 @@ info "Set dash shell"
 ln -sf /mnt/usr/bin/dash /mnt/bin/sh
 
 info "Disabling beep sound"
-arch-chroot /mnt rmmod pcspkr
+arch-chroot /mnt rmmod pcspkr &>/dev/null
 printf "blacklist pcspkr\n" > /mnt/etc/modprobe.d/nobeep.conf
 
 if [ -f /mnt/usr/bin/pulseaudio ]; then
