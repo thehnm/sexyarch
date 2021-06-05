@@ -115,6 +115,7 @@ serviceinit() {
 cleanup() {
     printf "\n"
     unset pass1 pass2
+    umount -R /mnt &>/dev/null
     err "Installation aborted"
     exit 1
 }
@@ -379,5 +380,7 @@ if [ $touchpad ]; then
         Option "DisableWhileTyping" "off"
     EndSection' > /mnt/usr/share/X11/xorg.conf.d/40-libinput.conf
 fi
+
+umount -R /mnt
 
 succ 'Installation is done. You can reboot now'
