@@ -90,6 +90,7 @@ gitinstall() {
 }
 
 install() {
+    info "Install packages"
     total=$(wc -l < packages.csv)
     total=$(( total - 1 ))
     while IFS=, read -r tag program comment; do
@@ -251,20 +252,25 @@ if [ $fullinstall ]; then
     fi
 
     if [ $uefi ]; then
+        info "Create partition scheme for UEFI"
         parted -s "$part" -- mklabel gpt \
             mkpart ESP fat32 1MiB 512MiB \
             set 1 boot on \
-            mkpart primary ext4 512MiB 100%
+            mkpart primary ext4 512MiB 100% &>/dev/null
 
         mainpart="${part}2"
-        mkfs.vfat -F32 "${part}1"
+
+        info "Build FAT32 filesystem on $(bold ${part}1)"
+        mkfs.vfat -F32 "${part}1" &>/dev/null
     else
+        info "Create partition scheme for Legacy Boot"
         parted -s "$part" -- mklabel msdos \
-            mkpart primary ext4 1MiB 100%
+            mkpart primary ext4 1MiB 100% &>/dev/null
         mainpart="${part}1"
     fi
 
-    mkfs.ext4 "$mainpart"
+    info "Build EXT4 filesystem on $(bold $mainpart)"
+    mkfs.ext4 "$mainpart" &>/dev/null
     mount "$mainpart" /mnt
 
     info "Install base system"
@@ -279,18 +285,25 @@ if [ $fullinstall ]; then
     if [ $uefi ]; then
         singleinstall efibootmgr "EFI Boot Manager"
         mount "${part}1" /mnt/boot/efi
+        info "Install GRUB for UEFI"
         arch-chroot /mnt grub-install --efi-directory="/boot/efi" --bootloader-id=GRUB --target=x86_64-efi &>/dev/null
     else
+        info "Install GRUB for Legacy Boot"
         arch-chroot /mnt grub-install "${part}" &>/dev/null
     fi
+    info "Generate GRUB configuration"
     arch-chroot /mnt grub-mkconfig -o /boot/grub/grub.cfg &>/dev/null
+
+    info "Set timezone to $(bold $zone)"
     arch-chroot /mnt ln -sf /usr/share/zoneinfo/"$zone" /etc/localtime
 
+    info "Set hostname to $(bold $host)"
     printf "$host" > /mnt/etc/hostname
     printf "127.0.0.1   localhost\n" > /mnt/etc/hosts
     printf "::1         localhost\n" > /mnt/etc/hosts
     printf "127.0.1.1   $host.localdomain     $host" > /mnt/etc/hosts
 
+    info "Set locale to $(bold $locale)"
     sed -i "s/\#$locale/$locale/" /mnt/etc/locale.gen
     arch-chroot /mnt locale-gen &>/dev/null
     printf "LANG=$locale.UTF-8\n" > /mnt/etc/locale.conf
@@ -321,7 +334,8 @@ if [ ! -f /usr/bin/yay ]; then
 fi" > /mnt/installyay.sh
 arch-chroot /mnt bash installyay.sh
 
-arch-chroot /mnt pacman --noconfirm -Sy archlinux-keyring
+info "Refresh Arch Linux Keyring"
+arch-chroot /mnt pacman --noconfirm -Sy archlinux-keyring &>/dev/null
 
 install
 
