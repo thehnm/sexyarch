@@ -359,7 +359,10 @@ arch-chroot /mnt sudo -u "$name" mkdir -p /home/"$name"/.local/share/zsh ## Stor
 arch-chroot /mnt sudo -u "$name" mkdir -p /home/"$name"/.config/notmuch ## Required by mutt-wizard
 arch-chroot /mnt sudo -u "$name" mkdir -p /home/"$name"/.config/newsboat ## Stores newsboat config
 arch-chroot /mnt sudo -u "$name" mkdir -p /home/"$name"/.local/share/newsboat ## Stores the cache and history file
-arch-chroot /mnt sudo -u "$name" mkdir -p /home/"$name"/{dl, docs, music, pics}
+arch-chroot /mnt sudo -u "$name" mkdir -p /home/"$name"/dl
+arch-chroot /mnt sudo -u "$name" mkdir -p /home/"$name"/docs
+arch-chroot /mnt sudo -u "$name" mkdir -p /home/"$name"/music
+arch-chroot /mnt sudo -u "$name" mkdir -p /home/"$name"/pics
 
 info "Setting permissions"
 newperms "%wheel ALL=(ALL) ALL\n%wheel ALL=(ALL) NOPASSWD: /usr/bin/shutdown,/usr/bin/reboot,/usr/bin/systemctl suspend,/usr/bin/wifi-menu,/usr/bin/mount,/usr/bin/umount,/usr/bin/pacman -Syu,/usr/bin/pacman -Syyu,/usr/bin/packer -Syu,/usr/bin/packer -Syyu,/usr/bin/systemctl restart NetworkManager,/usr/bin/rc-service NetworkManager restart,/usr/bin/pacman -Syyu --noconfirm,/usr/bin/loadkeys,/usr/bin/yay"
