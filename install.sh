@@ -39,7 +39,6 @@ warn() {
 }
 
 newperms() {
-    # Set special sudoers settings for install (or after).
     info "Setting sudoers"
     sed -i "/#SCRIPT/d" /mnt/etc/sudoers
     printf "%b #SCRIPT\n" "$@" >> /mnt/etc/sudoers
@@ -71,7 +70,7 @@ aurinstall() {
     arch-chroot /mnt sudo -u $name yay --noconfirm -S "$1" &>/dev/null
 }
 
-putgitrepo() { # Downloads a gitrepo $1 and places the files in $2 only overwriting conflicts
+putgitrepo() {
     [ -z "$3" ] && branch="master" || branch="$3"
     tempdir=/gittemp
     mkdir -p /mnt/"$tempdir"
@@ -82,7 +81,6 @@ putgitrepo() { # Downloads a gitrepo $1 and places the files in $2 only overwrit
     rm -rf /mnt/"$tempdir"
 }
 
-# Requires the git repository to have some kind of build file/Makefile
 gitinstall() {
     progname="$(basename "$1" .git)"
     dir="$repodir/$progname"
@@ -93,7 +91,7 @@ gitinstall() {
 
 install() {
     total=$(wc -l < packages.csv)
-    total=$(( total - 1 )) # Remove header line
+    total=$(( total - 1 ))
     while IFS=, read -r tag program comment; do
         case "$tag" in
             "") pacmaninstall "$program" "$comment" ;;
