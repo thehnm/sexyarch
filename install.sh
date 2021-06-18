@@ -276,13 +276,13 @@ if [ $fullinstall ]; then
     info "Install base system"
     pacstrap /mnt base base-devel linux linux-firmware vi vim man zsh &> /dev/null
     genfstab -Up /mnt > /mnt/etc/fstab
-    [ $uefi ] && mkdir -p /mnt/boot/efi
 
     info "Install bootloader"
     singleinstall grub "Bootloader"
     singleinstall os-prober "Detects other operating systems"
     singleinstall ntfs-3g "Driver for detecting Windows partition"
     if [ $uefi ]; then
+        mkdir -p /mnt/boot/efi
         singleinstall efibootmgr "EFI Boot Manager"
         mount "${part}1" /mnt/boot/efi
         info "Install GRUB for UEFI"
