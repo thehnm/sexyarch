@@ -276,7 +276,7 @@ if [ $fullinstall ]; then
     info "Install base system"
     pacstrap /mnt base base-devel linux linux-firmware vi vim man zsh &> /dev/null
     genfstab -Up /mnt > /mnt/etc/fstab
-    [ $uefi ] && mkdir -p /mnt/boot/efi && mount "${part}1" /mnt/boot/efi
+    [ $uefi ] && mkdir -p /mnt/boot/efi
 
     info "Install bootloader"
     singleinstall grub "Bootloader"
