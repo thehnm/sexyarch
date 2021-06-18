@@ -300,9 +300,9 @@ if [ $fullinstall ]; then
 
     info "Set hostname to $(bold $host)"
     printf "$host" > /mnt/etc/hostname
-    printf "127.0.0.1   localhost\n" > /mnt/etc/hosts
-    printf "::1         localhost\n" > /mnt/etc/hosts
-    printf "127.0.1.1   $host.localdomain     $host" > /mnt/etc/hosts
+    printf "127.0.0.1   localhost\n" >> /mnt/etc/hosts
+    printf "::1         localhost\n" >> /mnt/etc/hosts
+    printf "127.0.1.1   $host.localdomain     $host" >> /mnt/etc/hosts
 
     info "Set locale to $(bold $locale)"
     sed -i "s/\#$locale/$locale/" /mnt/etc/locale.gen
