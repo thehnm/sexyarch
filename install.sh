@@ -2,6 +2,7 @@
 
 [ -z ${dotfilesrepo+x} ] && dotfilesrepo="https://github.com/thehnm/dotfiles.git"
 [ -z ${editor+x} ] && editor="vim"
+[ -z ${efidir+x} ] && efidir="/boot/efi"
 
 ###############################################################################
 
@@ -282,11 +283,11 @@ if [ $fullinstall ]; then
     singleinstall os-prober "Detects other operating systems"
     singleinstall ntfs-3g "Driver for detecting Windows partition"
     if [ $uefi ]; then
-        mkdir -p /mnt/boot/efi
+        mkdir -p /mnt"${efidir}"
         singleinstall efibootmgr "EFI Boot Manager"
-        mount "${part}1" /mnt/boot/efi
+        mount "${part}1" /mnt"${efidir}"
         info "Install GRUB for UEFI"
-        arch-chroot /mnt grub-install --efi-directory="/boot/efi" --bootloader-id=GRUB --target=x86_64-efi &>/dev/null
+        arch-chroot /mnt grub-install --efi-directory="${efidir}" --bootloader-id=GRUB --target=x86_64-efi &>/dev/null
     else
         info "Install GRUB for Legacy Boot"
         arch-chroot /mnt grub-install "${part}" &>/dev/null
