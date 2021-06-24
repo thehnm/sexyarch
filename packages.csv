@@ -5,6 +5,7 @@
 ,xorg-xrandr,"Interface for RandR interface"
 ,xf86-input-evdev,"X.org evdev input driver"
 ,xclip,"X clipboard"
+,gtk2,"GTK2 toolkit"
 ,libxinerama,"X11 Xinerama extension library"
 ,neovim,"A tidier vim with some useful features"
 ,python-neovim,"Python client for neovim"
