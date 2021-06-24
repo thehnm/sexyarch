@@ -54,6 +54,7 @@
 ,picom,"X Compositor"
 ,fzf,"Fuzzy File Finder"
 ,ripgrep,"A search tool that combines the usability of ag with the raw speed of grep"
+,bat,"Better cat"
 A,brave-bin,"Primary browser"
 A,mutt-wizard-git,"Automatic neomutt configurator"
 A,tremc-git,"Curses interface for transmission-daemon"
