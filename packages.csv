@@ -4,6 +4,7 @@
 ,xorg-xsetroot,"Utility for setting root window to pattern or color"
 ,xorg-xrandr,"Interface for RandR interface"
 ,xf86-input-evdev,"X.org evdev input driver"
+,xclip,"X clipboard"
 ,libxinerama,"X11 Xinerama extension library"
 ,neovim,"A tidier vim with some useful features"
 ,python-neovim,"Python client for neovim"
