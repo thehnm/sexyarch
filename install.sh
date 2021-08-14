@@ -342,6 +342,7 @@ install
 
 info "Installing dotfiles"
 putgitrepo "$dotfilesrepo" "/home/$name"
+arch-chroot /mnt bash -c "cd /home/$name && sudo -u $name git submodule foreach 'make' && git submodule foreach 'make install'"
 arch-chroot /mnt bash -c "cd /home/$name && sudo -u $name git config --local status.showUntrackedFiles no"
 
 info "Install antibody zsh plugin manager"
