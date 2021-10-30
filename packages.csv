@@ -31,7 +31,7 @@
 ,zathura-pdf-mupdf,"For mupdf compatibility"
 ,libmpdclient,"API library for mpd"
 ,zsh,"Primary interactive shell"
-,scrot,"CLI screenshot utility"
+,maim,"CLI screenshot utility"
 ,ttf-fira-mono,"Primary monospace font"
 ,ttf-fira-code,"Secondary monospace font"
 ,libertinus-font,"Primary sans and serif fonts included"
