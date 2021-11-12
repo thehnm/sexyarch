@@ -3,6 +3,8 @@
 [ -z ${dotfilesrepo+x} ] && dotfilesrepo="https://github.com/thehnm/dotfiles.git"
 [ -z ${editor+x} ] && editor="vim"
 [ -z ${efidir+x} ] && efidir="/boot/efi"
+[ -z ${aurhelper+x}] && aurhelper="yay"
+[ -z ${aurhelperurl+x}] && aurhelperurl="https://aur.archlinux.org/yay.git"
 
 ###############################################################################
 
@@ -45,17 +47,6 @@ newperms() {
     printf "%b #SCRIPT\n" "$@" >> /mnt/etc/sudoers
 }
 
-createyayscript() {
-    printf "if [ ! -f /usr/bin/yay ]; then
-    pacman --noconfirm -S git &>/dev/null
-    sudo -u $name git clone https://aur.archlinux.org/yay.git /tmp/yay &>/dev/null
-    (
-        cd /tmp/yay
-        sudo -u $name makepkg --noconfirm -si &>/dev/null
-    )
-fi" > /mnt/installyay.sh
-}
-
 singleinstall() {
     info2 "Installing $1. $2"
     arch-chroot /mnt pacman --noconfirm --needed -S "$1" &>/dev/null
@@ -68,7 +59,7 @@ pacmaninstall() {
 
 aurinstall() {
     info2 "[$n/$total] $1. $2"
-    arch-chroot /mnt sudo -u $name yay --noconfirm -S "$1" &>/dev/null
+    arch-chroot /mnt sudo -u $name $aurhelper --noconfirm -S "$1" &>/dev/null
 }
 
 putgitrepo() {
@@ -323,17 +314,17 @@ unset pass1 pass2
 
 newperms "%wheel ALL=(ALL) NOPASSWD: ALL"
 
-info "Install yay AUR helper"
+info "Install $aurhelper AUR helper"
 printf "\
-if [ ! -f /usr/bin/yay ]; then
+if [ ! -f /usr/bin/$aurhelper ]; then
     pacman --noconfirm -S git &>/dev/null
-    sudo -u $name git clone https://aur.archlinux.org/yay.git /tmp/yay &>/dev/null
+    sudo -u $name git clone $aurhelperurl /tmp/$aurhelper &>/dev/null
     (
-        cd /tmp/yay
+        cd /tmp/$aurhelper
         sudo -u $name makepkg --noconfirm -si &>/dev/null
     )
-fi" > /mnt/installyay.sh
-arch-chroot /mnt bash installyay.sh
+fi" > /mnt/installaurhelper.sh
+arch-chroot /mnt bash installaurhelper.sh
 
 info "Refresh Arch Linux Keyring"
 arch-chroot /mnt pacman --noconfirm -Sy archlinux-keyring &>/dev/null
@@ -379,7 +370,7 @@ arch-chroot /mnt sudo -u "$name" mkdir -p /home/"$name"/music
 arch-chroot /mnt sudo -u "$name" mkdir -p /home/"$name"/pics
 
 info "Setting permissions"
-newperms "%wheel ALL=(ALL) ALL\n%wheel ALL=(ALL) NOPASSWD: /usr/bin/shutdown,/usr/bin/reboot,/usr/bin/systemctl suspend,/usr/bin/wifi-menu,/usr/bin/mount,/usr/bin/umount,/usr/bin/pacman -Syu,/usr/bin/pacman -Syyu,/usr/bin/packer -Syu,/usr/bin/packer -Syyu,/usr/bin/systemctl restart NetworkManager,/usr/bin/rc-service NetworkManager restart,/usr/bin/pacman -Syyu --noconfirm,/usr/bin/loadkeys,/usr/bin/yay"
+newperms "%wheel ALL=(ALL) ALL\n%wheel ALL=(ALL) NOPASSWD: /usr/bin/shutdown,/usr/bin/reboot,/usr/bin/systemctl suspend,/usr/bin/wifi-menu,/usr/bin/mount,/usr/bin/umount,/usr/bin/pacman -Syu,/usr/bin/pacman -Syyu,/usr/bin/packer -Syu,/usr/bin/packer -Syyu,/usr/bin/systemctl restart NetworkManager,/usr/bin/rc-service NetworkManager restart,/usr/bin/pacman -Syyu --noconfirm,/usr/bin/loadkeys,/usr/bin/$aurhelper"
 
 serviceinit NetworkManager cronie ntpdate sshd
 
