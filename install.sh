@@ -3,8 +3,8 @@
 [ -z ${dotfilesrepo+x} ] && dotfilesrepo="https://github.com/thehnm/dotfiles.git"
 [ -z ${editor+x} ] && editor="vim"
 [ -z ${efidir+x} ] && efidir="/boot/efi"
-[ -z ${aurhelper+x}] && aurhelper="yay"
-[ -z ${aurhelperurl+x}] && aurhelperurl="https://aur.archlinux.org/yay.git"
+[ -z ${aurhelper+x}] && aurhelper="pikaur"
+[ -z ${aurhelperurl+x}] && aurhelperurl="https://aur.archlinux.org/pikaur.git"
 
 ###############################################################################
 
@@ -321,7 +321,7 @@ if [ ! -f /usr/bin/$aurhelper ]; then
     sudo -u $name git clone $aurhelperurl /tmp/$aurhelper &>/dev/null
     (
         cd /tmp/$aurhelper
-        sudo -u $name makepkg --noconfirm -si &>/dev/null
+        sudo -u $name makepkg --noconfirm -fsri &>/dev/null
     )
 fi" > /mnt/installaurhelper.sh
 arch-chroot /mnt bash installaurhelper.sh
