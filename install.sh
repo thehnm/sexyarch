@@ -5,6 +5,7 @@
 [ -z ${efidir+x} ] && efidir="/boot/efi"
 [ -z ${aurhelper+x}] && aurhelper="pikaur"
 [ -z ${aurhelperurl+x}] && aurhelperurl="https://aur.archlinux.org/pikaur.git"
+[ -z ${packagelist+x}] && packagelist="https://raw.githubusercontent.com/thehnm/sexyarch/master/packages.csv"
 
 ###############################################################################
 
@@ -232,7 +233,7 @@ while ! [[ $pass1 == $pass2 ]]; do
     printf "\n"
 done
 
-[ ! -f packages.csv ] && info "Downloading packages file" && curl https://raw.githubusercontent.com/thehnm/autoarch/master/packages.csv > packages.csv
+[ ! -f packages.csv ] && info "Downloading packages file" && curl $packagelist > packages.csv
 [ $packageedit ] && $editor packages.csv && clear
 
 if [ $fullinstall ]; then
