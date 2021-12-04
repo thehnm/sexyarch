@@ -14,8 +14,8 @@ However, this script will already configure some settings such as locales, timez
 The next step after installing Arch Linux would be to download this script.
 
 ```bash
-git clone https://github.com/thehnm/autoarch
-cd autoarch
+git clone https://github.com/thehnm/sexyarch
+cd sexyarch
 bash install.sh
 ```
 
