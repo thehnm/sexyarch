@@ -85,14 +85,13 @@ gitinstall() {
 install() {
     info "Install packages"
     total=$(wc -l < packages.csv)
-    total=$(( total - 1 ))
     while IFS=, read -r tag program comment; do
+        n=$((n+1))
         case "$tag" in
             "") pacmaninstall "$program" "$comment" ;;
             "A") aurinstall "$program" "$comment" ;;
             "G") gitinstall "$program" "$comment" ;;
         esac
-        n=$((n+1))
     done < packages.csv ;
 }
 
