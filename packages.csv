@@ -61,6 +61,8 @@
 ,lynx,"Text browser"
 ,rofi-calc,"Calculator using rofi and qalc"
 ,exa,"Replacement for ls"
+,ikhal,"CLI calendar"
+,vdirsyncer,"Sync CALDav and CARDDav elements"
 A,brave-bin,"Primary browser"
 A,mutt-wizard-git,"Automatic neomutt configurator"
 A,tremc-git,"Curses interface for transmission-daemon"
