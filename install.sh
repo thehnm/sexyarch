@@ -332,8 +332,9 @@ arch-chroot /mnt pacman --noconfirm -Sy archlinux-keyring &>/dev/null
 install
 
 info "Installing dotfiles"
-putgitrepo "$dotfilesrepo" "/home/$name"
-arch-chroot /mnt bash -c "cd /home/$name && sudo -u $name git config --local status.showUntrackedFiles no"
+arch-chroot /mnt bash -c "sudo -u $name git clone --bare $dotfilesrepo /home/$name/.dotfiles"
+arch-chroot /mnt bash -c "sudo -u $name echo .dotfiles >> /home/$name/.gitignore"
+arch-chroot /mnt bash -c "cd /home/$name && sudo -u $name git --git-dir=/home/$name/.dotfiles/ --work-tree=/home/$name checkout"
 
 info "Install antibody zsh plugin manager"
 arch-chroot /mnt bash -c "sudo -u $name curl -sfL git.io/antibody | sh -s - -b /home/$name/.local/bin/ &>/dev/null"
