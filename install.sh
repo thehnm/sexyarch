@@ -215,7 +215,7 @@ while true; do
 done
 
 info "Initial check"
-[ -z "$name" ] && err "Username not set" && exit 1
+[ -z "$name" ] && err "Username not set" && exit 1 && pacman -S archlinux-keyring
 
 clear
 
